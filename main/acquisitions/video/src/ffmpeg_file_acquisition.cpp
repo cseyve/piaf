@@ -236,7 +236,7 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 
 	// Get a pointer to the codec context for the video stream
 	m_pCodecCtx = m_pFormatCtx->streams[m_videoStream]->codec;
-	if(m_pCodecCtx->codec_id == CODEC_ID_MJPEG) {
+    if(m_pCodecCtx->codec_id == AV_CODEC_ID_MJPEG) {
 		m_isJpeg = true; }
 
 	// Find the decoder for the video stream
@@ -253,7 +253,7 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 	//    pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;
 
 	// Open codec
-	if(avcodec_open(m_pCodecCtx, m_pCodec)<0) {
+    if(avcodec_open(m_pCodecCtx, m_pCodec)<0) {
 		fprintf(stderr, "FileVA::%s:%d : cannot open codec\n", __func__, __LINE__ );
 		return -1; // Could not open codec
 	}
@@ -353,7 +353,7 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 			numBytes_orig); fflush(stderr);*/
 
 	// Determine required buffer size and allocate buffer
-	numBytes = avpicture_get_size(PIX_FMT_RGBA32,
+    numBytes = avpicture_get_size(AV_PIX_FMT_RGBA32,
 								  m_pCodecCtx->width,
 								  m_pCodecCtx->height);
 	fprintf(stderr, "FileVA::%s:%d : allocating %d x %d => m_inbuff [ %d ] in RGBA32....\n",
@@ -378,7 +378,7 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 			numBytes); fflush(stderr);*/
 
 	// Assign appropriate parts of buffer to image planes in pFrameRGB
-	avpicture_fill((AVPicture *)m_pFrameRGB, m_inbuff, PIX_FMT_RGBA32,
+    avpicture_fill((AVPicture *)m_pFrameRGB, m_inbuff, AV_PIX_FMT_RGBA32,
 		mImageSize.width, mImageSize.height);
 	myAcqIsInitialised = true;
 	m_fileSize = url_fsize(URLPB(m_pFormatCtx->pb));
@@ -1106,7 +1106,7 @@ int FFmpegFileVideoAcquisition::readImageRGB32(unsigned char * image,
 #if 0
 	// conversion to RGB32 coding
 /*	PRINT_FIXME
-	img_convert((AVPicture *)m_pFrameRGB, PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
+    img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
 				mImageSize.pix_fmt, mImageSize.width, mImageSize.height);
 	PRINT_FIXME
 
@@ -1124,8 +1124,8 @@ int FFmpegFileVideoAcquisition::readImageRGB32(unsigned char * image,
 
 	if(1 ) { // vp->bmp) {
 
-		//	  dst_pix_fmt = PIX_FMT_YUV420P;
-		dst_pix_fmt = PIX_FMT_YUV420P;
+        //	  dst_pix_fmt = AV_PIX_FMT_YUV420P;
+        dst_pix_fmt = AV_PIX_FMT_YUV420P;
 
 		/* point pict at the queue */
 		//	pict.data[0] = vp->bmp->pixels[0];
@@ -1444,9 +1444,9 @@ int FFmpegFileVideoAcquisition::readImageRGB32NoAcq(unsigned char* image, long *
 		(int)avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height));
 	*/
 #if 0
-	img_convert((AVPicture *)m_pFrameRGB, PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
+    img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
 					m_pCodecCtx->pix_fmt, mImageSize.width, mImageSize.height);
-/*FIXME	img_convert((AVPicture *)m_pFrameRGB, PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
+/*FIXME	img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
 				m_pCodecCtx->pix_fmt, mImageSize.width, mImageSize.height);
 */
 	memcpy(image, m_inbuff,
@@ -1463,8 +1463,8 @@ int FFmpegFileVideoAcquisition::readImageRGB32NoAcq(unsigned char* image, long *
 
 	if(1 ) { // vp->bmp) {
 
-            //	  dst_pix_fmt = PIX_FMT_YUV420P;
-            dst_pix_fmt = PIX_FMT_RGB32;
+            //	  dst_pix_fmt = AV_PIX_FMT_YUV420P;
+            dst_pix_fmt = AV_PIX_FMT_RGB32;
 
             // point pict at the queue
             pict.data[0] = m_pFrameRGB->data[0];
@@ -1620,82 +1620,82 @@ int FFmpegFileVideoAcquisition::getPalette()
 
 	switch(m_pCodecCtx->pix_fmt)
 	{
-		case PIX_FMT_YUV420P:   ///< Planar YUV 4:2:0 (1 Cr & Cb sample per 2x2 Y samples)
-		case PIX_FMT_YUVJ420P:  ///< Planar YUV 4:2:0 full scale (jpeg)
+        case AV_PIX_FMT_YUV420P:   ///< Planar YUV 4:2:0 (1 Cr & Cb sample per 2x2 Y samples)
+        case AV_PIX_FMT_YUVJ420P:  ///< Planar YUV 4:2:0 full scale (jpeg)
 			myVD_palette = VIDEO_PALETTE_YUV420P;
 			//fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_YUV420P\n", __func__, __LINE__);
 			break;
-	#ifdef PIX_FMT_YUV422
-		case PIX_FMT_YUV422:
+    #ifdef AV_PIX_FMT_YUV422
+        case AV_PIX_FMT_YUV422:
 			fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_YUV422\n", __func__, __LINE__);
 			myVD_palette = VIDEO_PALETTE_YUV422;
 			break;
 	#endif
-		case PIX_FMT_RGB24:     ///< Packed pixel, 3 bytes per pixel, RGBRGB...
+        case AV_PIX_FMT_RGB24:     ///< Packed pixel, 3 bytes per pixel, RGBRGB...
 			fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_RGB24\n", __func__, __LINE__);
 			myVD_palette = VIDEO_PALETTE_RGB24;
 			break;
-		case PIX_FMT_YUV422P:   ///< Planar YUV 4:2:2 (1 Cr & Cb sample per 2x1 Y samples)
+        case AV_PIX_FMT_YUV422P:   ///< Planar YUV 4:2:2 (1 Cr & Cb sample per 2x1 Y samples)
 			fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_YUV422\n", __func__, __LINE__);
 			myVD_palette = VIDEO_PALETTE_YUV422P;
 			break;
-		case PIX_FMT_RGBA32:    ///< Packed pixel, 4 bytes per pixel, BGRABGRA..., stored in cpu endianness
+        case AV_PIX_FMT_RGBA32:    ///< Packed pixel, 4 bytes per pixel, BGRABGRA..., stored in cpu endianness
 			fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_RGB32\n", __func__, __LINE__);
 			myVD_palette = VIDEO_PALETTE_RGB32;
 			break;
-		case PIX_FMT_YUV410P:   ///< Planar YUV 4:1:0 (1 Cr & Cb sample per 4x4 Y samples)
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_YUV410P\n");
+        case AV_PIX_FMT_YUV410P:   ///< Planar YUV 4:1:0 (1 Cr & Cb sample per 4x4 Y samples)
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_YUV410P\n");
 			myVD_palette = VIDEO_PALETTE_YUV410P;
 			break;
-		case PIX_FMT_YUV411P:   ///< Planar YUV 4:1:1 (1 Cr & Cb sample per 4x1 Y samples)
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_YUV411P\n");
+        case AV_PIX_FMT_YUV411P:   ///< Planar YUV 4:1:1 (1 Cr & Cb sample per 4x1 Y samples)
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_YUV411P\n");
 			myVD_palette = VIDEO_PALETTE_YUV411P;
 			break;
-		case PIX_FMT_RGB565:    ///< always stored in cpu endianness
+        case AV_PIX_FMT_RGB565:    ///< always stored in cpu endianness
 			myVD_palette = VIDEO_PALETTE_RGB565;
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_RGB565\n");
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_RGB565\n");
 			break;
-		case PIX_FMT_RGB555:    ///< always stored in cpu endianness, most significant bit to 1
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_RGB55\n");
+        case AV_PIX_FMT_RGB555:    ///< always stored in cpu endianness, most significant bit to 1
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_RGB55\n");
 			myVD_palette = VIDEO_PALETTE_RGB555;
 			break;
-		case PIX_FMT_GRAY8:
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_GRAY8\n");
+        case AV_PIX_FMT_GRAY8:
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_GRAY8\n");
 			myVD_palette = VIDEO_PALETTE_GREY;
 			break;
-		case PIX_FMT_NB:
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_NB\n");
+        case AV_PIX_FMT_NB:
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_NB\n");
 			myVD_palette = VIDEO_PALETTE_RGB24;
 			break;
-		case PIX_FMT_BGR24:     ///< Packed pixel, 3 bytes per pixel, BGRBGR...
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_BGR24\n");
+        case AV_PIX_FMT_BGR24:     ///< Packed pixel, 3 bytes per pixel, BGRBGR...
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_BGR24\n");
 			myVD_palette = VIDEO_PALETTE_RGB24;
 			break;
-		case PIX_FMT_YUV444P:   ///< Planar YUV 4:4:4 (1 Cr & Cb sample per 1x1 Y samples)
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_YUV444P\n");
+        case AV_PIX_FMT_YUV444P:   ///< Planar YUV 4:4:4 (1 Cr & Cb sample per 1x1 Y samples)
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_YUV444P\n");
 			myVD_palette = VIDEO_PALETTE_YUV422P;
 			break;
-		case PIX_FMT_MONOWHITE: ///< 0 is white
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_MONOWHITE\n");
+        case AV_PIX_FMT_MONOWHITE: ///< 0 is white
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_MONOWHITE\n");
 			return -1;
-		case PIX_FMT_MONOBLACK: ///< 0 is black
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_MONOBLACK\n");
+        case AV_PIX_FMT_MONOBLACK: ///< 0 is black
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_MONOBLACK\n");
 			return -1;
-		case PIX_FMT_PAL8:      ///< 8 bit with RGBA palette
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_PAL8\n");
+        case AV_PIX_FMT_PAL8:      ///< 8 bit with RGBA palette
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_PAL8\n");
 			return -1;
-		case PIX_FMT_YUVJ422P:  ///< Planar YUV 4:2:2 full scale (jpeg)
-	//		fprintf(stderr, "FileVA: Palette is PIX_FMT_YUVJ422P\n");
+        case AV_PIX_FMT_YUVJ422P:  ///< Planar YUV 4:2:2 full scale (jpeg)
+    //		fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_YUVJ422P\n");
 			myVD_palette = VIDEO_PALETTE_YUV422P;
 			break;
-		case PIX_FMT_YUVJ444P:  ///< Planar YUV 4:4:4 full scale (jpeg)
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_YUVJ444P\n");
+        case AV_PIX_FMT_YUVJ444P:  ///< Planar YUV 4:4:4 full scale (jpeg)
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_YUVJ444P\n");
 			return -1;
-		case PIX_FMT_XVMC_MPEG2_MC:///< XVideo Motion Acceleration via common packet passing(xvmc_render.h)
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_XVMC_MPEG2_MC\n");
+        case AV_PIX_FMT_XVMC_MPEG2_MC:///< XVideo Motion Acceleration via common packet passing(xvmc_render.h)
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_XVMC_MPEG2_MC\n");
 			return -1;
-		case PIX_FMT_XVMC_MPEG2_IDCT:
-			fprintf(stderr, "FileVA: Palette is PIX_FMT_XVMC_MPEG2_IDCT\n");
+        case AV_PIX_FMT_XVMC_MPEG2_IDCT:
+            fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_XVMC_MPEG2_IDCT\n");
 			return -1;
 		default:
 			fprintf(stderr, "FileVA::%s:%d : UNKNOWN PALETTE !!\n", __func__, __LINE__);

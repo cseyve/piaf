@@ -21,7 +21,7 @@
 #include <signal.h>
 
 
-#include <qapplication.h>
+#include <QApplication>
 #include <qfont.h>
 #include <qstring.h>
 #include <qtextcodec.h>

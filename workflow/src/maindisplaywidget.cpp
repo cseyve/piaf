@@ -115,12 +115,12 @@ int MainDisplayWidget::setImageFile(QString imagePath,
 	ui->stackedWidget->hide();
 	fprintf(stderr, "NavImageWidget::%s:%d ('%s')\n",
 			__func__, __LINE__,
-			imagePath.toAscii().data());
+			qPrintable(imagePath));
 
 	if(!m_fullImage.load(imagePath)) {
 		fprintf(stderr, "NavImageWidget::%s:%d could not load '%s'\n",
 				__func__, __LINE__,
-				imagePath.toAscii().data());
+				qPrintable(imagePath));
 		ret = -1;
 		m_fullImage = QImage(":/icons/error.png");
 	}
@@ -145,7 +145,7 @@ int MainDisplayWidget::setMovieFile(QString moviePath,
 									t_image_info_struct * pinfo)
 {
 	PIAF_MSG(SWLOG_INFO, "moviePath='%s' pinfo=%p",
-			 moviePath.toAscii().data(), pinfo);
+			 qPrintable(moviePath), pinfo);
 	mpImageInfoStruct = pinfo;
 
 	QFileInfo fi(moviePath);
@@ -208,7 +208,7 @@ int MainDisplayWidget::setMovieFile(QString moviePath,
 			t_movie_pos bkmk = (*it);
 			PIAF_MSG(SWLOG_INFO, "\t\tadded bookmark name='%s' "
 					 "prevAbsPos=%lld prevKeyFrame=%lld nbFrameSinceKey=%d",
-					 bkmk.name.toAscii().data(),
+					 qPrintable(bkmk.name),
 					 bkmk.prevAbsPosition,
 					 bkmk.prevKeyFramePosition,
 					 bkmk.nbFramesSinceKeyFrame
@@ -493,7 +493,7 @@ void MainDisplayWidget::on_speedComboBox_currentIndexChanged(QString val)
 	bool ok = false;
 	val.replace("x", "");
 	PIAF_MSG(SWLOG_INFO, "Movie player speed changed x%g to '%s'",
-			 mPlaySpeed, val.toAscii().data());
+			 mPlaySpeed, qPrintable(val));
 	if(val.contains("/"))
 	{
 		QStringList split = val.split("/");
@@ -517,7 +517,7 @@ void MainDisplayWidget::on_speedComboBox_currentIndexChanged(QString val)
 		else {
 			fprintf(stderr, "MainDisplayWidget::%s:%d : cannot split val='%s' playspeed=%g\n",
 					__func__, __LINE__,
-					val.toAscii().data(),
+					qPrintable(val),
 					mPlaySpeed);
 
 		}
@@ -602,7 +602,7 @@ void MainDisplayWidget::on_addBkmkButton_clicked()
 	t_movie_pos bkmk = mpFileVA->getMoviePosition();
 
 	PIAF_MSG(SWLOG_INFO, "New bookmark = {name='%s', prevAbsPosition=%llu, key=%llu +%d frames}",
-			 bkmk.name.toAscii().data(),
+			 qPrintable(bkmk.name),
 			 bkmk.prevAbsPosition, bkmk.prevKeyFramePosition, bkmk.nbFramesSinceKeyFrame);
 	appendBookmark( bkmk );
 
@@ -815,7 +815,7 @@ void MainDisplayWidget::on_mainImageWidget_signalSnapshot(QImage snap)
 		fi.setFile(absPath);
 		if( fi.exists() )
 		{
-			MDW_printf(EMALOG_INFO, "file '%s' already exists", absPath.toAscii().data());
+			MDW_printf(EMALOG_INFO, "file '%s' already exists", qPrintable(absPath));
 			mSnapCounter++; //  -042.png already exists, so next will be 0043 ... until the file does not exists
 			number.sprintf("-%03d.png", mSnapCounter);
 			absPath = savePath.absoluteFilePath(mSourceName + number);
@@ -825,7 +825,7 @@ void MainDisplayWidget::on_mainImageWidget_signalSnapshot(QImage snap)
 			bool saved = snap.save(absPath);
 			if(saved) {
 				mSnapCounter++; // Save -042.png, so next will be 0043, we can increase counter now
-				MDW_printf(EMALOG_INFO, "=> saved as '%s'", absPath.toAscii().data());
+				MDW_printf(EMALOG_INFO, "=> saved as '%s'", qPrintable(absPath));
 			} else {
 				QMessageBox::critical(NULL, tr("Can't save image"),
 									  tr("Can't save image file ") + absPath);

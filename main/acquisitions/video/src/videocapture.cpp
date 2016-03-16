@@ -431,7 +431,7 @@ bool VideoCaptureDoc::openDocument(const QString &filename, const char * /*forma
 	QFile f( filename );
 	if ( !f.open( QIODevice::ReadOnly ) )
 	{
-		PIAF_MSG(SWLOG_ERROR, "cannot open file '%s'", filename.toAscii().data());
+		PIAF_MSG(SWLOG_ERROR, "cannot open file '%s'", qPrintable(filename));
 		return false;
 	}
 	/////////////////////////////////////////////////

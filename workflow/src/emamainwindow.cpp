@@ -219,8 +219,8 @@ void EmaMainWindow::appendCollection(QDomElement collecElem, EmaCollection * par
 	newCollec->treeViewItem = NULL;
 
 	EMAMW_printf(SWLOG_INFO, "\t\tAdding collection '%s' / '%s'...",
-			 title.toAscii().data(),
-			 newCollec->comment.toAscii().data());
+			 qPrintable(title),
+			 qPrintable(newCollec->comment));
 
 	// Read files
 	QDomNode subcollecNode = collecElem.firstChild();
@@ -245,7 +245,7 @@ void EmaMainWindow::appendCollection(QDomElement collecElem, EmaCollection * par
 						newCollec->filesList.append(pfile);
 
 						EMAMW_printf(SWLOG_INFO, "\t\t\tAdding file '%s'...",
-								 pfile->filename.toAscii().data()
+								 qPrintable(pfile->filename)
 								 );
 					}
 
@@ -261,7 +261,7 @@ void EmaMainWindow::appendCollection(QDomElement collecElem, EmaCollection * par
 				while(!subcollecNode2.isNull()) {
 					QDomElement subcollecElem2 = subcollecNode2.toElement(); // try to convert the node to an element.
 					if(!subcollecElem2.isNull()) {
-						EMAMW_printf(SWLOG_INFO, "\t\t\t\tAdding sub-collection '%s'...", subcollecElem2.attribute("title").toAscii().data());
+						EMAMW_printf(SWLOG_INFO, "\t\t\t\tAdding sub-collection '%s'...", qPrintable(subcollecElem2.attribute("title")));
 						appendCollection(subcollecElem2, newCollec);
 					}
 					subcollecNode2 = subcollecNode2.nextSibling();
@@ -327,14 +327,14 @@ void EmaMainWindow::loadSettings()
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		EMAMW_printf(SWLOG_ERROR, "could not open file '%s' for reading: err=%s",
-				 file.fileName().toAscii().data(),
-				 file.errorString().toAscii().data());
+				 qPrintable(file.fileName()),
+				 qPrintable(file.errorString()));
 		return;
 	}
 	else
 	{
 		EMAMW_printf(SWLOG_ERROR, "loading settings in file '%s'...",
-				 file.fileName().toAscii().data());
+				 qPrintable(file.fileName()));
 		QString errorMsg;
 		int errorLine = 0;
 		int errorColumn = 0;
@@ -343,8 +343,8 @@ void EmaMainWindow::loadSettings()
 			EMAMW_printf(SWLOG_ERROR,
 					 "could not read content of file '%s' as XML doc: "
 					 "err='%s' line %d col %d",
-					 file.fileName().toAscii().data(),
-					 errorMsg.toAscii().data(),
+					 qPrintable(file.fileName()),
+					 qPrintable(errorMsg),
 					 errorLine, errorColumn
 					 );
 
@@ -360,7 +360,7 @@ void EmaMainWindow::loadSettings()
 	while(!n.isNull()) {
 		QDomElement e = n.toElement(); // try to convert the node to an element.
 		if(!e.isNull()) {
-			EMAMW_printf(SWLOG_INFO, "\tCategory '%s'", e.tagName().toAscii().data()); // the node really is an element.
+			EMAMW_printf(SWLOG_INFO, "\tCategory '%s'", qPrintable(e.tagName())); // the node really is an element.
 
 			if(e.tagName().compare("General")==0) // Read default directories
 			{
@@ -387,7 +387,7 @@ void EmaMainWindow::loadSettings()
 					if(!folderElem.isNull()) {
 						// Read parameters
 						QString path = folderElem.attribute("fullpath");
-						EMAMW_printf(SWLOG_INFO, "\t\tAdding folder '%s'...", path.toAscii().data());
+						EMAMW_printf(SWLOG_INFO, "\t\tAdding folder '%s'...", qPrintable(path));
 						mDirectoryList.append( appendDirectoryToLibrary(path));
 					}
 					folderNode = folderNode.nextSibling();
@@ -423,7 +423,7 @@ void EmaMainWindow::addCollectionToXMLSettings(QDomElement * parent_elem,
 											   EmaCollection collec)
 {
 	EMAMW_printf(SWLOG_INFO, "\tAdding collection '%s' to XML",
-			 collec.title.toAscii().data());
+			 qPrintable(collec.title));
 	QDomElement elem = mSettingsDoc.createElement("collection");
 	elem.setAttribute("title", collec.title);
 	elem.setAttribute("comment", collec.comment);
@@ -471,7 +471,7 @@ void EmaMainWindow::saveSettings()
 		mSettings.setArrayIndex(i);
 		mSettings.setValue("path", g_workflow_settings.directoryList.at(i)->fullpath);
 		EMAMW_printf(EMALOG_DEBUG, "\tadded directory '%s'",
-					 g_workflow_settings.directoryList.at(i)->fullpath.toAscii().data());
+					 qPrintable(g_workflow_settings.directoryList.at(i)->fullpath));
 		//settings.setValue("password", list.at(i).password);
 	}
 
@@ -482,15 +482,15 @@ void EmaMainWindow::saveSettings()
 //	QFile file("piafworkflowsettings.xml");
 //	if (!file.open(QIODevice::ReadOnly)) {
 //		EMAMW_printf(SWLOG_ERROR, "could not open file '%s' for reading: err=%s",
-//				 file.name().toAscii().data(),
-//				 file.errorString().toAscii().data());
+//				 qPrintable(file.name()),
+//				 qPrintable(file.errorString()));
 //		//	 return;
 //	}
 //	else {
 //		if (!doc.setContent(&file)) {
 //			EMAMW_printf(SWLOG_ERROR, "could not read content of file '%s' dor XML doc: err=%s",
-//					 file.name().toAscii().data(),
-//					 file.errorString().toAscii().data());
+//					 qPrintable(file.name()),
+//					 qPrintable(file.errorString()));
 //			file.close();
 
 //			// return;
@@ -542,7 +542,7 @@ void EmaMainWindow::saveSettings()
 		elemFolders.appendChild(elem);
 
 		EMAMW_printf(EMALOG_INFO, "\tadded directory '%s' to XML",
-					 g_workflow_settings.directoryList.at(i)->fullpath.toAscii().data()
+					 qPrintable(g_workflow_settings.directoryList.at(i)->fullpath)
 					 );
 	}
 
@@ -576,7 +576,7 @@ void EmaMainWindow::saveSettings()
 	fileout.close();
 
 	EMAMW_printf(SWLOG_INFO, " saved string '%s' in $HOME/" PIAFWKFL_SETTINGS_XML,
-			 mSettingsDoc.toString().toAscii().data()
+			 qPrintable(mSettingsDoc.toString())
 			 );
 }
 
@@ -814,7 +814,7 @@ void scanDirectory(QString path, int * p_nb_files)
 	if(fidir.isFile()) return;
 
 	EMAMW_printf(EMALOG_TRACE, "scanning path '%s' (total for the moment = %d)\n",
-			path.toAscii().data(), *p_nb_files);
+			qPrintable(path), *p_nb_files);
 
 	QDir dir(path);
 	int nb_files = 0;
@@ -830,7 +830,7 @@ void scanDirectory(QString path, int * p_nb_files)
 		else if(fi.isDir() && fi.absoluteFilePath().length() > path.length())
 		{
 			EMAMW_printf(EMALOG_TRACE, "\tscanning path '%s' (total for the moment = %d)\n",
-					fi.absoluteFilePath().toAscii().data(), *p_nb_files);
+					qPrintable(fi.absoluteFilePath()), *p_nb_files);
 
 			// scan recursively
 			scanDirectory(fi.absoluteFilePath(), p_nb_files);
@@ -853,7 +853,7 @@ void EmaMainWindow::on_filesTreeWidget_itemExpanded(QTreeWidgetItem * item)
 	// add sub items
 	fprintf(stderr, "EmaMW::%s:%d : EXPAND THIS TREE '%s' !\n",
 					__func__, __LINE__,
-					curdir->mFullPath.toAscii().data());
+					qPrintable(curdir->mFullPath));
 
 	curdir->expand();
 }
@@ -892,7 +892,7 @@ QStringList DirectoryTreeWidgetItem::getFileList()
 void DirectoryTreeWidgetItem::expand()
 {
 	EMAMW_printf(SWLOG_DEBUG, "Expanding directory '%s'",
-				 mFullPath.toAscii().data()
+				 qPrintable(mFullPath)
 				 );
 	QDir dir(mFullPath);
 	QFileInfoList fiList = dir.entryInfoList();
@@ -903,7 +903,7 @@ void DirectoryTreeWidgetItem::expand()
 		if(fi.isFile() && fi.absoluteFilePath().length() > mFullPath.length())
 		{
 			EMAMW_printf(EMALOG_TRACE, "\tadding FILE '%s'\n",
-					fi.absoluteFilePath().toAscii().data());
+					qPrintable(fi.absoluteFilePath()));
 
 
 			// Add item for file
@@ -920,7 +920,7 @@ void DirectoryTreeWidgetItem::expand()
 		else if(fi.isDir() && fi.absoluteFilePath().length() > mFullPath.length())
 		{
 			EMAMW_printf(EMALOG_TRACE, "adding subdir '%s'\n",
-					fi.absoluteFilePath().toAscii().data());
+					qPrintable(fi.absoluteFilePath()));
 
 			mSubDirsList.append(
 					new DirectoryTreeWidgetItem(this,
@@ -1348,7 +1348,7 @@ void EmaMainWindow::slot_thumbImage_selected(QString fileName)
 void EmaMainWindow::slot_thumbImage_signal_click(ThumbImageFrame * thumb)
 {
 	EMAMW_printf(EMALOG_INFO, "simple-click on %p = '%s'", thumb,
-				 thumb ? thumb->getFilename().toAscii().data():"null");
+				 thumb ? qPrintable(thumb->getFilename()):"null");
 	mSelectedThumbImageFrame = thumb;
 
 	if(mGridThumbImageFrameList.contains(thumb))
@@ -1368,7 +1368,7 @@ void EmaMainWindow::slot_thumbImage_clicked(QString fileName)
 	QFileInfo fi(fileName);
 	if(!fi.exists()) {
 		EMAMW_printf(SWLOG_ERROR, "File '%s' does not exists",
-				 fileName.toAscii().data());
+				 qPrintable(fileName));
 		return;
 	}
 
@@ -1382,7 +1382,7 @@ void EmaMainWindow::slot_thumbImage_doubleClicked(QString fileName)
 	if(!fi.exists()) {
 
 		EMAMW_printf(SWLOG_ERROR, "File '%s' does not exists",
-				 fileName.toAscii().data());
+				 qPrintable(fileName));
 		QMessageBox::critical(NULL, tr("File not found"),
 							  tr("File ")+fileName+tr(" does not exist.")
 							  );
@@ -1671,15 +1671,15 @@ void EmaMainWindow::on_collecAddButton_clicked()
 
 void EmaMainWindow::slot_newCollDialog_signalNewCollection(EmaCollection collec)
 {
-	EMAMW_printf(SWLOG_INFO, "Adding new collection '%s'", collec.title.toAscii().data());
+	EMAMW_printf(SWLOG_INFO, "Adding new collection '%s'", qPrintable(collec.title));
 
 	EmaCollection * new_collec = new EmaCollection(collec);
 	g_workflow_settings.collectionList.append(new_collec);
 	if(mpCurrentCollection )
 	{
 		EMAMW_printf(SWLOG_INFO, "\tAdding '%s' AS SUB-collection OF '%s'",
-					 collec.title.toAscii().data(),
-					 mpCurrentCollection->title.toAscii().data()
+					 qPrintable(collec.title),
+					 qPrintable(mpCurrentCollection->title)
 					 );
 
 		new CollecTreeWidgetItem(mpCurrentCollection->treeViewItem, new_collec);
@@ -1687,7 +1687,7 @@ void EmaMainWindow::slot_newCollDialog_signalNewCollection(EmaCollection collec)
 	else
 	{
 		EMAMW_printf(SWLOG_INFO, "\tAdding '%s' AS new top-level collection",
-					 collec.title.toAscii().data());
+					 qPrintable(collec.title));
 		new CollecTreeWidgetItem(ui->collecTreeWidget, new_collec);
 	}
 	saveSettings();
@@ -1781,7 +1781,7 @@ void CollecTreeWidgetItem::expand()
 		if(fi.isFile() && fi.absoluteFilePath().length() > fullPath.length())
 		{
 			EMAMW_printf(EMALOG_TRACE, "\tadding FILE '%s'\n",
-					fi.absoluteFilePath().toAscii().data());
+					fi.absoluteFilePath()));
 
 
 			// Add item for file
@@ -1798,7 +1798,7 @@ void CollecTreeWidgetItem::expand()
 		else if(fi.isDir() && fi.absoluteFilePath().length() > fullPath.length())
 		{
 			EMAMW_printf(EMALOG_TRACE, "adding subdir '%s'\n",
-					fi.absoluteFilePath().toAscii().data());
+					fi.absoluteFilePath()));
 
 			subDirsList.append(
 					new DirectoryTreeWidgetItem(this,
@@ -1849,7 +1849,7 @@ void EmaMainWindow::on_collecTreeWidget_itemExpanded(QTreeWidgetItem* item)
 	// add sub items
 	fprintf(stderr, "EmaMW::%s:%d : EXPAND THIS TREE '%s' !\n",
 					__func__, __LINE__,
-					curdir->mpCollec->title.toAscii().data());
+					qPrintable(curdir->mpCollec->title));
 
 	item->setExpanded(true);
 	curdir->expand();
@@ -1858,7 +1858,7 @@ void EmaMainWindow::on_collecTreeWidget_itemExpanded(QTreeWidgetItem* item)
 void CollecTreeWidgetItem::expand()
 {
 	EMAMW_printf(SWLOG_INFO, "Expanding collection %p='%s'",
-				 mpCollec, mpCollec ? mpCollec->title.toAscii().data() : "null"
+				 mpCollec, mpCollec ? qPrintable(mpCollec->title) : "null"
 				 );
 
 	updateDisplay();
@@ -1876,7 +1876,7 @@ void CollecTreeWidgetItem::updateDisplay()
 	}
 
 	EMAMW_printf(SWLOG_INFO, "update collection %p='%s' / %d files / %d subcolls",
-				 mpCollec, mpCollec ? mpCollec->title.toAscii().data() : "null",
+				 mpCollec, mpCollec ? qPrintable(mpCollec->title) : "null",
 				 mpCollec ? mpCollec->filesList.count() : -1,
 				 mpCollec ? mpCollec->subCollectionsList.count() : -1
 				 );
@@ -1910,7 +1910,7 @@ void CollecTreeWidgetItem::updateDisplay()
 			{
 				t_collection_file * pfile = (*fit);
 				EMAMW_printf(SWLOG_DEBUG, "Create item for file '%s'",
-							 pfile->filename.toAscii().data());
+							 qPrintable(pfile->filename));
 
 				if(!pfile->treeViewItem) {
 					// create one item per child
@@ -1924,7 +1924,7 @@ void CollecTreeWidgetItem::updateDisplay()
 		else
 		{
 			EMAMW_printf(SWLOG_WARNING, "'%s' not expanded",
-						 mpCollec->title.toAscii().data()
+						 qPrintable(mpCollec->title)
 						 );
 		}
 
@@ -1936,7 +1936,7 @@ void CollecTreeWidgetItem::updateDisplay()
 		{
 			EmaCollection * subcol = (*cit);
 			EMAMW_printf(SWLOG_DEBUG, "Create item for collection '%s'",
-						 subcol->title.toAscii().data());
+						 qPrintable(subcol->title));
 			if(!subcol->treeViewItem)
 			{
 				subcol->treeViewItem = (QTreeWidgetItem *)new CollecTreeWidgetItem(
@@ -2463,7 +2463,7 @@ void EmaMainWindow::updateCollectionsTreeWidgetItems()
 		if(!pcol->treeViewItem)
 		{
 			EMAMW_printf(SWLOG_INFO, "added missing item for collec '%s'",
-						 pcol->title.toAscii().data());
+						 qPrintable(pcol->title));
 			pcol->treeViewItem = (QTreeWidgetItem *)new CollecTreeWidgetItem(
 						ui->collecTreeWidget, pcol );
 		}
@@ -2576,7 +2576,7 @@ void EmaMainWindow::on_addToCurrentCollectionButton_clicked()
 
 	EMAMW_printf(SWLOG_INFO, "append %d files to collection '%s'",
 				 files.count(),
-				 mpCurrentCollection->title.toAscii().data() );
+				 qPrintable(mpCurrentCollection->title) );
 	mpCurrentCollection->appendFiles(files);
 
 	updateCollectionsTreeWidgetItems();
@@ -2638,7 +2638,7 @@ void EmaMainWindow::on_collecTreeWidget_itemDoubleClicked(QTreeWidgetItem *item,
 		if(!collecItem->mpCollec) { return; }
 
 		EMAMW_printf(SWLOG_INFO, "Open all files of collection '%s'",
-					 collecItem->mpCollec->title.toAscii().data()
+					 qPrintable(collecItem->mpCollec->title)
 					 );
 
 //		if(collecItem->mpCollec == mpQuickCollection ) { return; }
@@ -2654,7 +2654,7 @@ void EmaMainWindow::on_collecTreeWidget_itemDoubleClicked(QTreeWidgetItem *item,
 			fit++)
 		{
 			EMAMW_printf(SWLOG_INFO, "\tadd thumb for file '%s'",
-						 (*fit)->fullpath.toAscii().data());
+						 qPrintable((*fit)->fullpath));
 			files.append( (*fit)->fullpath );
 		}
 
@@ -2697,7 +2697,7 @@ void EmaMainWindow::on_collecTreeWidget_itemSelectionChanged()
 //			fit++)
 //		{
 //			EMAMW_printf(SWLOG_INFO, "Load file '%s'",
-//						 (*fit)->fullpath.toAscii().data());
+//						 (*fit)->fullpath));
 //			appendThumbImage( (*fit)->fullpath );
 //		}
 
@@ -2726,7 +2726,7 @@ void EmaMainWindow::on_collecTreeWidget_itemSelectionChanged()
 		}
 
 		EMAMW_printf(SWLOG_INFO, "parent collection = '%s' / %d files",
-					 collecItem->mpCollec->title.toAscii().data(),
+					 qPrintable(collecItem->mpCollec->title),
 					 collecItem->mpCollec->filesList.count()
 					 );
 
@@ -2738,7 +2738,7 @@ void EmaMainWindow::on_collecTreeWidget_itemSelectionChanged()
 			t_collection_file * pfile = (*fit);
 			if(pfile->treeViewItem == item)
 			{
-				EMAMW_printf(SWLOG_INFO, "open file '%s'", pfile->fullpath.toAscii().data());
+				EMAMW_printf(SWLOG_INFO, "open file '%s'", qPrintable(pfile->fullpath));
 				// open file
 				slot_thumbImage_clicked(pfile->fullpath);
 			}

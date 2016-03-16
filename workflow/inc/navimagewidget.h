@@ -26,7 +26,7 @@
 #ifndef NAVIMAGEWIDGET_H
 #define NAVIMAGEWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include "qimagedisplay.h"
 
 namespace Ui {

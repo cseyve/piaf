@@ -26,7 +26,7 @@
 #ifndef THUMBIMAGEFRAME_H
 #define THUMBIMAGEFRAME_H
 
-#include <QtGui/QFrame>
+#include <QFrame>
 #include "imageinfo.h"
 
 namespace Ui {

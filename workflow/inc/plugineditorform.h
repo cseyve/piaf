@@ -30,11 +30,15 @@
 #include "PiafFilter.h"
 
 #include <vector>
-
 #include <QWidget>
-
 #include <QTreeWidgetItem>
+
+#ifndef _QT5
 #include <QWorkspace>
+#else
+#define QWorkspace QWidget
+#endif
+
 
 
 namespace Ui {

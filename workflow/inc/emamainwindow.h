@@ -27,9 +27,11 @@
 
 #include <QtCore/QTimer>
 
-#include <QtGui/QMainWindow>
-#include <QtGui/QTreeWidgetItem>
+#include <QMainWindow>
+#include <QTreeWidgetItem>
+#ifndef _QT5
 #include <QWorkspace>
+#endif
 #include <QSettings>
 #include <QDomDocument>
 #include <QMdiArea>

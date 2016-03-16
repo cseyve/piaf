@@ -290,7 +290,7 @@ public:
 	int get_pitch();
 	int get_uW();
 	int get_vW();
-	enum PixelFormat get_pixfmt();
+    enum AVPixelFormat get_pixfmt();
 
 
 private:

@@ -59,8 +59,8 @@ EmaCollection::~EmaCollection()
 void EmaCollection::appendSubCollection(EmaCollection *sub)
 {
 	WKTYPES_MSG(SWLOG_INFO, "Append sub-collection '%s' to collection '%s'",
-				sub ? sub->title.toAscii().data() : "null",
-				title.toAscii().data()
+				sub ? qPrintable(sub->title) : "null",
+				qPrintable(title)
 				);
 	this->subCollectionsList.append(sub);
 }
@@ -69,7 +69,7 @@ void EmaCollection::appendFiles(QStringList listOfFiles)
 {
 	WKTYPES_MSG(SWLOG_INFO, "Append %d files to collection '%s'",
 				listOfFiles.count(),
-				title.toAscii().data()
+				qPrintable(title)
 				);
 
 	QStringList::iterator it;
@@ -96,7 +96,7 @@ void EmaCollection::appendFiles(QStringList listOfFiles)
 			pfile->type = 0;
 			pfile->treeViewItem = NULL; /// \todo implement tree widgets item generation
 
-			WKTYPES_MSG(SWLOG_DEBUG, "\tappend file '%s'", pfile->fullpath.toAscii().data());
+			WKTYPES_MSG(SWLOG_DEBUG, "\tappend file '%s'", qPrintable(pfile->fullpath));
 			filesList.append(pfile);
 		}
 	}
@@ -106,7 +106,7 @@ void removeCollection(QList<EmaCollection *> * pCollList, EmaCollection * delCol
 {
 	PIAF_MSG(SWLOG_DEBUG, "Search in collections list %p for '%s'...",
 				 pCollList,
-				 delCol->title.toAscii().data());
+				 qPrintable(delCol->title));
 
 	QList<EmaCollection *>::iterator cit;
 	for(cit = pCollList->begin(); cit != pCollList->end(); ++cit)
@@ -127,7 +127,7 @@ void removeCollection(QList<EmaCollection *> * pCollList, EmaCollection * delCol
 		{
 			// Search in its sub-collection
 			PIAF_MSG(SWLOG_DEBUG, "Search in '%s's sub-collections...",
-						 pcol->title.toAscii().data());
+						 qPrintable(pcol->title));
 			removeCollection(&pcol->subCollectionsList, delCol);
 		}
 	}
@@ -139,7 +139,7 @@ void EmaCollection::removeFiles(QStringList listOfFiles)
 {
 	WKTYPES_MSG(SWLOG_INFO, "Append %d files to collection '%s'",
 				listOfFiles.count(),
-				title.toAscii().data()
+				qPrintable(title)
 				);
 
 	QStringList::iterator it;
@@ -159,7 +159,7 @@ void EmaCollection::removeFiles(QStringList listOfFiles)
 		if(found)
 		{
 			t_collection_file * pfile = found;
-			WKTYPES_MSG(SWLOG_DEBUG, "\tremove file '%s'", pfile->fullpath.toAscii().data());
+			WKTYPES_MSG(SWLOG_DEBUG, "\tremove file '%s'", qPrintable(pfile->fullpath));
 			filesList.removeOne(pfile);
 			if(pfile->treeViewItem)
 			{
@@ -173,7 +173,7 @@ void EmaCollection::clearFiles()
 {
 	WKTYPES_MSG(SWLOG_INFO, "Clear files list: %d files in collection '%s'",
 				filesList.count(),
-				title.toAscii().data()
+				qPrintable(title)
 				);
 	while(!filesList.isEmpty())
 	{

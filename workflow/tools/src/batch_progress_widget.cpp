@@ -136,7 +136,7 @@ void purgeBatchTask(t_batch_task * pTask)
 
 	fprintf(stderr, "[%s] %s:%d: delete batch task '%s' + %d files\n",
 			__FILE__, __func__, __LINE__,
-			pTask->sequencePath.toAscii().data(),
+			qPrintable(pTask->sequencePath),
 			pTask->itemsList.count()
 			);
 	QList<t_batch_item *>::iterator it;
@@ -230,7 +230,7 @@ void BatchProgressWidget::on_loadButton_clicked()
  * Set the plugin sequence */
 void BatchProgressWidget::setPluginSequence(QString fileName)
 {
-	PIAF_MSG(SWLOG_INFO, "set plugin sequence '%s'", fileName.toAscii().data());
+	PIAF_MSG(SWLOG_INFO, "set plugin sequence '%s'", qPrintable(fileName));
 	if(!mpBatchTask)
 	{
 		PIAF_MSG(SWLOG_INFO, "allocate batch task");
@@ -248,7 +248,7 @@ void BatchProgressWidget::setPluginSequence(QString fileName)
 	{
 		mLastPluginsDirName = fi.absoluteDir().absolutePath();
 		PIAF_MSG(SWLOG_INFO, "Load filter sequence in directory '%s': sequence file '%s'",
-				 mLastPluginsDirName.toAscii().data(),
+				 qPrintable(mLastPluginsDirName),
 				 fi.absoluteFilePath().toUtf8().data()
 				 );
 
@@ -293,7 +293,7 @@ int BatchProgressWidget::setBatchTask(t_batch_task * pTask)
 	{
 		PIAF_MSG(SWLOG_INFO, "Received new task = %p : %d files, sequence='%s'",
 				 mpBatchTask, mpBatchTask->itemsList.count(),
-				 mpBatchTask->sequencePath.toAscii().data()
+				 qPrintable(mpBatchTask->sequencePath)
 				 );
 	} else {
 		PIAF_MSG(SWLOG_INFO, "Received new task = %p", pTask);
@@ -595,7 +595,7 @@ void BatchProgressWidget::on_filesTreeWidget_itemClicked(
 			{
 				fprintf(stderr, "[Batch] %s:%d : loaded '%s'\n",
 						__func__, __LINE__,
-						item->absoluteFilePath.toAscii().data());
+						qPrintable(item->absoluteFilePath));
 //				QPixmap pixmap;
 //				pixmap = pixmap.fromImage(loadImage.scaled(ui->imageLabel->size(),
 //														   Qt::KeepAspectRatio));
@@ -614,7 +614,7 @@ void BatchProgressWidget::on_filesTreeWidget_itemClicked(
 					{
 						fprintf(stderr, "BatchThread::%s:%d : could not load '%s' as an image\n",
 								__func__, __LINE__,
-								item->absoluteFilePath.toAscii().data());
+								qPrintable(item->absoluteFilePath));
 					}
 
 					if(loadedImage)
@@ -651,7 +651,7 @@ void BatchProgressWidget::on_filesTreeWidget_itemClicked(
 						fprintf(stderr, "[Batch] %s:%d : process sequence '%s' on image '%s' (%dx%dx%dx%d)\n",
 								__func__, __LINE__,
 								mPreviewFilterSequencer.getPluginSequenceFile(),
-								item->absoluteFilePath.toAscii().data(),
+								qPrintable(item->absoluteFilePath),
 								loadedImage->width, loadedImage->height,
 								loadedImage->depth, loadedImage->nChannels
 								);
@@ -662,7 +662,7 @@ void BatchProgressWidget::on_filesTreeWidget_itemClicked(
 								"=> display image '%s' (%dx%dx%dx%d)\n",
 								__func__, __LINE__,
 								mPreviewFilterSequencer.getPluginSequenceFile(),
-								item->absoluteFilePath.toAscii().data(),
+								qPrintable(item->absoluteFilePath),
 								loadedImage->width, loadedImage->height,
 								loadedImage->depth, loadedImage->nChannels);
 
@@ -678,7 +678,7 @@ void BatchProgressWidget::on_filesTreeWidget_itemClicked(
 				ui->imageLabel->setRefImage(NULL);
 				fprintf(stderr, "[Batch] %s:%d : could not load '%s'\n",
 						__func__, __LINE__,
-						item->absoluteFilePath.toAscii().data());
+						qPrintable(item->absoluteFilePath));
 			}
 		}
 	}

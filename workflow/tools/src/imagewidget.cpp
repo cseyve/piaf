@@ -140,7 +140,11 @@ void initColorLUTs()
 }
 
 
-ImageWidget::ImageWidget(QWidget *parent, const char *name, Qt::WFlags f)
+ImageWidget::ImageWidget(QWidget *parent, const char *name
+						 #ifndef _QT5
+						 , Qt::WFlags f
+						 #endif
+						 )
 	: QWidget(parent)
 {
 	initColorLUTs();

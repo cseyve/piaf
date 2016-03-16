@@ -69,7 +69,7 @@ PluginEditDialog::PluginEditDialog(QWidget *parent) :
 						QListWidgetItem * item = new QListWidgetItem(cmd, ui->pluginListWidget);
 						val = val.trimmed();
 						fprintf(stderr, "plugins : '%s' : '%s'\n",
-								cmd.toAscii().data(), val.toAscii().data());
+								qPrintable(cmd), qPrintable(val));
 						if(!val.isEmpty()) {
 							if(pixIcon.load(val)) {
 								item->setIcon(pixIcon);
@@ -151,7 +151,7 @@ void PluginEditDialog::on_delButton_clicked()
 	{
 		QListWidgetItem * item = *it;
 		fprintf(stderr, "\tDelete item %p='%s'\n",
-				item, item->text().toAscii().data());
+				item, qPrintable(item->text()));
 		ui->pluginListWidget->takeItem( ui->pluginListWidget->row(item) );
 	}
 }
@@ -175,10 +175,10 @@ void PluginEditDialog::on_saveButton_clicked()
 			QListWidgetItem * item = ui->pluginListWidget->item(idx);
 			if(!item->text().isEmpty()) {
 				if(item->icon().isNull())
-					fprintf(f, "%s\t\n", item->text().toAscii().data());
+					fprintf(f, "%s\t\n", qPrintable(item->text()));
 				else
-					fprintf(f, "%s\t\n", item->text().toAscii().data());
-/// \todo : fixme 	fprintf(f, "%s\t%s\n", item->text(0).toAscii().data(), item->text(1).toAscii().data());
+					fprintf(f, "%s\t\n", qPrintable(item->text()));
+/// \todo : fixme 	fprintf(f, "%s\t%s\n", qPrintable(item->text(0)), qPrintable(item->text(1)));
 			}
 		}
 		fclose(f);

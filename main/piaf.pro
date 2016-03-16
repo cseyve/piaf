@@ -2,6 +2,10 @@
 # Author : Christophe Seyve - cseyve@free.fr
 
 TARGET = piaf
+greaterThan(QT_MAJOR_VERSION, 4): {
+	QT += widgets
+	DEFINES += _QT5
+}
 
 VERSION = "`date +%Y%m%d`"
 QT += xml
@@ -347,11 +351,6 @@ FORMS3 = ui/piafconfigurationdialog.ui
 #    ui/pluginlistdialog.ui
 TEMPLATE = app
 
-# The following line was inserted by qt3to4
-QT += qt3support
-
-# The following line was inserted by qt3to4
-CONFIG += uic3
 
 
 ###########################################################

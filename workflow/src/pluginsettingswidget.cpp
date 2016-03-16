@@ -230,7 +230,7 @@ void PluginSettingsWidget::on_applyButton_clicked()
 			break;
 		default:
 			if(!swGetValueFromTypeAndString(func->param_list[i].type,
-					(char *)mParamsEditLines[txtcount]->text().toAscii().data(),
+					(char *)qPrintable(mParamsEditLines[txtcount]->text()),
 					func->param_list[i].value))
 			{
 				fprintf(stderr, "PluginSettingsEdit::%s:%d: Error: incompatible type and value.\n",

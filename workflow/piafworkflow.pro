@@ -3,6 +3,11 @@
 # -------------------------------------------------
 TEMPLATE = app
 
+greaterThan(QT_MAJOR_VERSION, 4): {
+	QT += widgets
+	DEFINES += _QT5
+}
+
 QT += xml
 
 
@@ -179,8 +184,8 @@ contains(DEFINES, "HAS_V4L") {
 
 contains(DEFINES, "HAS_V4L2") {
 	message("    + Add device support through V4L2")
-	SOURCES += \
-			$$LEGACYPATH/acquisitions/video/src/jdatasrc.c
+	SOURCES += $$LEGACYPATH/acquisitions/video/src/jdatasrc.c
+	LIBS += -ljpeg
 	DEFINES += _V4L2
 
 	HEADERS += $$LEGACYPATH/acquisitions/video/inc/V4L2Device.h \

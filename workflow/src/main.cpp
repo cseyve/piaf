@@ -22,7 +22,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "emamainwindow.h"
 #include <QSplashScreen>
 #include <QTranslator>
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	QString translationFile = QString("piafworkflow_") +
 							  localLang.languageToString(localLang.language()) +
 							  QString(".qm");
-	fprintf(stderr, "Translation file='%s'\n", translationFile.toAscii().data());
+	fprintf(stderr, "Translation file='%s'\n", qPrintable(translationFile));
 	tor.load( translationFile,
 			  dir.absolutePath() );
 

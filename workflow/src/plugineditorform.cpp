@@ -426,6 +426,7 @@ void PluginEditorForm::updateSelectedView()
 void PluginEditorForm::setWorkspace(QWorkspace * wsp) {
 	pWorkspace = wsp;
 
+#ifndef _QT5
 	if(pWorkspace) {
 		((QWorkspace *)pWorkspace)->addWindow((QWidget *)this);
 		mHasGUI = true;
@@ -435,6 +436,7 @@ void PluginEditorForm::setWorkspace(QWorkspace * wsp) {
 
 		show();
 	}
+#endif
 }
 
 /*  Initialisation :
@@ -570,7 +572,7 @@ void PluginEditorForm::on_loadButton_clicked()
 												tr("Sequences (*.flist)"));
 	if(path.isEmpty()) return;
 
-	mpFilterSequencer->loadSequence(path.toUtf8().data());
+	mpFilterSequencer->loadSequence(qPrintable(path));
 
 	// Store last sequence directory
 	QFileInfo fi(path);
@@ -591,7 +593,7 @@ void PluginEditorForm::on_saveButton_clicked()
 												tr("Sequences (*.flist)"));
 	if(path.isEmpty()) return;
 
-	mpFilterSequencer->saveSequence(path.toUtf8().data());
+	mpFilterSequencer->saveSequence(qPrintable(path));
 
 	// Store last sequence directory
 	QFileInfo fi(path);
@@ -696,7 +698,7 @@ void PluginEditorForm::cleanAllPlugins()
 		PiafFilter * filter = (*it);
 		QFileInfo fi(filter->exec_name);
 		char command[1024];
-		sprintf(command, "killall -9 %s %s", filter->exec_name, fi.baseName().toAscii().data());
+		sprintf(command, "killall -9 %s %s", filter->exec_name, qPrintable(fi.baseName()));
 		PIAF_MSG(SWLOG_DEBUG, "run cmd '%s'", command);
 		system(command);
 	}

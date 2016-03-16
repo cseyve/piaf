@@ -21,7 +21,7 @@
 
 // include files for QT
 #include <qapplication.h>
-#include <q3mainwindow.h>
+#include <qmainwindow.h>
 #include <qaction.h>
 #include <qworkspace.h>
 #include <qmenubar.h>

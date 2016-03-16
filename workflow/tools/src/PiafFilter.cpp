@@ -469,17 +469,18 @@ int FilterSequencer::loadFilters()
 		strcat(home, "/.piaf_plugins");
 		f = fopen(home, "r");
 		if(!f) {
-#ifndef CONSOLE
+// Hide the message box because it's behind the splash screen
 
-			QMessageBox::critical(NULL,
-				tr("Filter Error"),
-				tr("Cannot find filter list, check installation."),
-				QMessageBox::Abort,
-				QMessageBox::NoButton,
-				QMessageBox::NoButton);
-#else
+//#ifndef CONSOLE
+//			QMessageBox::critical(NULL,
+//				tr("Filter Error"),
+//				tr("Cannot find filter list, check installation."),
+//				QMessageBox::Abort,
+//				QMessageBox::NoButton,
+//				QMessageBox::NoButton);
+//#else
 			PIAF_MSG(SWLOG_ERROR, "Cannot find filter list, check installation");
-#endif
+//#endif
 			return 0;
 		}
 		PIAF_MSG(SWLOG_INFO, "Loading files from '%s'", home);
@@ -498,10 +499,15 @@ int FilterSequencer::loadFilters()
 		// read executable name
 		if(ret && line[0] != '#') {
 			// last char should be '\n'
-			if( line[strlen(line)-1]== '\n')
+			if( strlen(line)>1 && line[strlen(line)-1]== '\n')
 			{
 				line[strlen(line)-1] = '\0';
 			}
+			if( strlen(line)>1 && line[strlen(line)-1]== '\r')
+			{
+				line[strlen(line)-1] = '\0';
+			}
+			fprintf(stderr, "%s:%d: read line '%s'\n", __func__, __LINE__, line);
 
 			// ok, we've got the name, now create filters from this name
 			if(strlen(line)>0) {
@@ -781,8 +787,10 @@ Format is simple : exec name and function index are needed, then parameters,
 */
 #define FILTERLIST_EXTENSION ".flist"
 
-int FilterSequencer::saveSequence(char * filename)
+int FilterSequencer::saveSequence(const char * i_filename)
 {
+	char filename[1024];
+	strcpy(filename, i_filename);
 	PIAF_MSG(SWLOG_INFO, "[FilterSequencer] saving('%s')...\n",
 			 filename);
 
@@ -858,14 +866,14 @@ int FilterSequencer::saveSequence(char * filename)
 }
 
 
-int FilterSequencer::loadFilterList(char * filename)
+int FilterSequencer::loadFilterList(const char * filename)
 {
 	return loadSequence(filename);
 }
 
 /* read configuration file for filters order
 */
-int FilterSequencer::loadSequence(char * filename)
+int FilterSequencer::loadSequence(const char * filename)
 {
 	char fname[1024];
 	strcpy(fname, (char *)filename);

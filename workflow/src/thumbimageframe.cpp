@@ -313,7 +313,7 @@ void ThumbImageFrame::setSelected(bool selected)
 {
 	THUMBIMGFR_MSG(SWLOG_INFO, "this=%p Thumb '%s' set selected='%c' shift=%c ctrl=%c",
 			 this,
-			 m_imagePath.toAscii().data(),
+			 qPrintable(m_imagePath),
 			 selected ? 'T':'F',
 			 mShift ? 'T':'F',
 			 mCtrl ? 'T':'F'
@@ -340,7 +340,7 @@ void ThumbImageFrame::setActive(bool active)
 	{
 		THUMBIMGFR_MSG(SWLOG_DEBUG, "this=%p Thumb '%s' active=%c",
 					   this,
-					   m_imagePath.toAscii().data(),
+					   qPrintable(m_imagePath),
 					   active ? 'T':'F');
 	}
 	mActive = active;
@@ -360,7 +360,7 @@ void ThumbImageFrame::updateBackground()
 					   "shift=%c ctrl=%c "
 					   "=> changed background",
 				 this,
-				 m_imagePath.toAscii().data(),
+				 qPrintable(m_imagePath),
 				 mSelected ? 'T':'F',
 				 mActive ? 'T':'F',
 					   mShift? 'T':'F',
@@ -375,7 +375,7 @@ void ThumbImageFrame::updateBackground()
 	} else {
 		THUMBIMGFR_MSG(SWLOG_INFO, "this=%p Thumb '%s' selected='%c' active='%c' => changed background",
 				 this,
-				 m_imagePath.toAscii().data(),
+				 qPrintable(m_imagePath),
 				 mSelected ? 'T':'F',
 				 mActive ? 'T':'F' );
 		setStyleSheet("background-color: rgba(128, 128, 128, 0);");

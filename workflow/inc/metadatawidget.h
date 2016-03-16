@@ -25,7 +25,7 @@
 #ifndef METADATAWIDGET_H
 #define METADATAWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include "imageinfo.h"
 
 namespace Ui {

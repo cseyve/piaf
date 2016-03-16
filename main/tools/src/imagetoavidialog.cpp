@@ -124,7 +124,7 @@ void ImageToAVIDialog::on_goButton_clicked()
 		++it;
 
 		fprintf(stderr, "ImgToAVI::%s:%d : loading file '%s' %d %% = %04d / %04d\n", __func__, __LINE__,
-				fileName.toAscii().data(), progress, file_count, (int)m_filesList.count());
+				qPrintable(fileName), progress, file_count, (int)m_filesList.count());
 		inputImage.load(fileName);
 
 		// if no encoder, open first image
@@ -132,7 +132,7 @@ void ImageToAVIDialog::on_goButton_clicked()
 		{
 			fprintf(stderr, "ImgToAVI::%s:%d : ERROR: could not load file '%s'\n",
 					__func__, __LINE__,
-					fileName.toAscii().data());
+					qPrintable(fileName));
 		}
 		else
 		{

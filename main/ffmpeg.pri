@@ -8,51 +8,81 @@
 # error($$PG "NOT FOUND => IT WILL NOT COMPILE")
 # }
 # For MacOS X
+
+message("*** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG ")
+message("Running ffmpeg.pri...............")
+message("*** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG ")
+
 LIBS_EXT = dylib
 
 # Append avcodec
 PG=libavcodec
-system(pkg-config --exists $$PG) {
+# Version >= 56.* are not supported yet
+#pkg-config --exists 'libavcodec <= 55.0.0' --print-errors
+system(pkg-config --exists $$PG 'libavcodec <= 55.0.0') {
 
-	message($$PG v$$system(pkg-config --modversion $$PG) found)
-	LIBS += $$system(pkg-config --libs $$PG)
-	INCLUDEPATH += $$system(pkg-config --cflags $$PG | sed s/-I//g)
+	message((ffmpeg/avcodec) $$PG v$$system(pkg-config --modversion $$PG) found)
+	# Check if it is supported now: version >=56 are notsupported yet
+
+
+
+#PG = libavcodec
+#system(pkg-config --exists $$PG) {
+#	unix: {
+#		LIBAVC_MAJOR = $$system(pkg-config --modversion $$PG)
+#	} else {
+#		LIBAVC_MAJOR = $$system(pkg-config --modversion $$PG)
+#	}
+#	message(ffmpeg.pri: LIBAVC_MAJOR=$$LIBAVC_MAJOR)
+#	message(ffmpeg.pri: $$PG v$$system(pkg-config --modversion $$PG) found)
+#	LIBS += $$system(pkg-config --libs $$PG)
+#	INCLUDEPATH += $$system(pkg-config --cflags $$PG | sed s/-I//g)
 
 
 	DEFINES += HAS_FFMPEG
+	LIBS += $$system(pkg-config --libs $$PG)
+	INCLUDEPATH += $$system(pkg-config --cflags $$PG | sed s/-I//g)
 } else {
-	error($$PG "NOT FOUND => IT WILL NOT COMPILE")
+	warning(ffmpeg.pri: $$PG "NOT FOUND => IT WILL NOT COMPILE")
 }
 
 
 # Append avformat
+message("(ffmpeg) check libavformat...")
+#system(pkg-config --exists $$PG) {
 PG=libavformat
-system(pkg-config --exists $$PG) {
-	message($$PG v$$system(pkg-config --modversion $$PG) found)
+system(pkg-config --exists $$PG 'libavformat <= 55.9.9') {
+	message((ffmpeg/avformat) $$PG v$$system(pkg-config --modversion $$PG) found)
 	LIBS += $$system(pkg-config --libs $$PG)
 	INCLUDEPATH += $$system(pkg-config --cflags $$PG | sed s/-I//g)
 
 
-	DEFINES += HAS_FFMPEG
+	DEFINES += HAS_AVFORMAT
 } else {
-	error($$PG "NOT FOUND => IT WILL NOT COMPILE")
+	DEFINES -= HAS_FFMPEG
+	warning($$PG "NOT FOUND => IT WILL NOT COMPILE")
 }
 
 
 # Append swscale
+message("(ffmpeg) check libswscale...")
+#system(pkg-config --exists $$PG) {
 PG=libswscale
-system(pkg-config --exists $$PG) {
+system(pkg-config --exists $$PG 'libswscale <= 2.9.9') {
 
-	message($$PG v$$system(pkg-config --modversion $$PG) found)
+	message((ffmpeg/swscale) $$PG v$$system(pkg-config --modversion $$PG) found)
 	LIBS += $$system(pkg-config --libs $$PG)
-	INCLUDEPATH += $$system(pkg-config --cflags $$PG | sed "s/\-I//g")
+	SWSCALEPKG = $$system(pkg-config --cflags $$PG | sed -e 's@-I@@g' )
+	message(SWSCALEPKG = $$SWSCALEPKG)
+	INCLUDEPATH += $$system(pkg-config --cflags $$PG | sed -e 's@-I@@g' )
 
 	DEFINES += HAS_SWSCALE
 } else {
-	error($$PG "NOT FOUND => IT WILL NOT COMPILE")
+	warning("(ffmpeg/$$PG) NOT FOUND => IT WILL NOT COMPILE")
 }
 
 
+message("(ffmpeg) check headers...")
 linux-g++*:LIBS_EXT = so
 INCLUDE_AVCODEC =
 LIBSWSLIBDIR =
@@ -117,8 +147,9 @@ unix: {
 		LIBS += -lswscale
 	}
 
-	message("Testing if libs ate installed in $$LIBSWSLIBDIR/libavcodec.$$LIBS_EXT")
+	message("Testing if libs are installed in $$LIBSWSLIBDIR/libavcodec.$$LIBS_EXT")
 	exists($$LIBSWSLIBDIR/libavcodec.$$LIBS_EXT) { 
+		message("(ffmpeg) Finally we have FFMPEG for Unix!")
 		DEFINES += HAS_FFMPEG
 	}
 
@@ -128,16 +159,21 @@ unix: {
 	LIBS += -lavutil -lavcodec -lavformat
 }
 
-win32: {
+message("(ffmpeg) check Windows...")
+win32: exists("C:\Program Files\ffmpeg\include\ffmpeg") {
 	DEFINES +=
 	INCLUDEPATH += "C:\Program Files\ffmpeg\include\ffmpeg"
 	LIBS += -L"C:\Program Files\ffmpeg\lib" \
 		-L"C:\Program Files\ffmpeg\bin" \
 		-lavcodec
+	message("(ffmpeg) Finally we have FFMPEG for Windows!")
 }
 
+#just for DEBUG
+	DEFINES -= HAS_FFMPEG
 
 
 
-message("FFMPEG: ")
+message("FFMPEG: CONCLUSION:")
 message("     - Includes : $$INCLUDEPATH")
+message("END: *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG *** FFMPEG ")

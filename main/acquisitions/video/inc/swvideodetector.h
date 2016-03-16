@@ -36,10 +36,10 @@ typedef struct _Img {
 	unsigned char 	depth;
 } Img;
 
-#ifndef max
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
-#endif
+//#ifndef max
+//#define min(a,b) ((a)<(b)?(a):(b))
+//#define max(a,b) ((a)>(b)?(a):(b))
+//#endif
 
 /// Gets size from PNM file (PPM/PGM)
 CvSize LoadPPMHeader(char *name);

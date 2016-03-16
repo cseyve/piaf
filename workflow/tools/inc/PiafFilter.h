@@ -290,10 +290,10 @@ public:
 	QList<PiafFilter *> getLoadedFilters() { return mLoadedFiltersList; }
 
 	/** @brief Save current sequence in file */
-	int saveSequence(char *filename);
+	int saveSequence(const char *filename);
 
 	/** @brief Load current sequence from file */
-	int loadSequence(char * filename);
+	int loadSequence(const char * filename);
 
 	/** @brief process an image and store result into input structure
 	  @param imageIn input image in IplImage structure
@@ -308,10 +308,10 @@ public:
 
 		@returns <0 if error, 0 if success
 	*/
-	int loadFilterList(char * filename);
+	int loadFilterList(const char * filename);
 
 	/** \brief Save a plugin sequence : { plugin>function>parameters => ... } */
-	void saveFilterList(char * filename);
+	void saveFilterList(const char * filename);
 
 	/** @brief Set final plugin in sequence: the next plugins won't be processed */
 	void setFinal(PiafFilter * filter);

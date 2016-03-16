@@ -48,7 +48,11 @@ class ImageWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	ImageWidget(QWidget *parent=0, const char *name=0, Qt::WFlags f=0);
+	ImageWidget(QWidget *parent=0, const char *name=0
+		#ifndef _QT5
+			, Qt::WFlags f=0
+		#endif
+		);
 
 	~ImageWidget()
 	{

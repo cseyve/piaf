@@ -25,7 +25,7 @@
 #ifndef THUMBIMAGEWIDGET_H
 #define THUMBIMAGEWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include "imageinfo.h"
 
 namespace Ui {

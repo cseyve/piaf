@@ -25,7 +25,7 @@
 #define MAINIMAGEWIDGET_H
 
 #include "imageinfo.h"
-#include <QtGui/QWidget>
+#include <QWidget>
 
 namespace Ui {
 	class MainImageWidget;

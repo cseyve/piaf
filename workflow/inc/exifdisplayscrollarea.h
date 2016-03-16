@@ -25,7 +25,7 @@
 #ifndef EXIFDISPLAYSCROLLAREA_H
 #define EXIFDISPLAYSCROLLAREA_H
 
-#include <QtGui/QScrollArea>
+#include <QScrollArea>
 #include "imageinfo.h"
 
 namespace Ui {

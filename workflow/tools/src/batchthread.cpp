@@ -19,7 +19,7 @@
 
 #include "batchthread.h"
 #include "FileVideoAcquisition.h"
-#include "ffmpeg_file_acquisition.h"
+#include "file_video_acquisition_factory.h"
 
 #include "piaf-settings.h"
 #include "piaf-common.h"
@@ -78,7 +78,7 @@ void printBatchOptions(t_batch_options * pOptions)
 			pOptions->reload_at_change ? 'T':'F',
 			pOptions->view_image ? 'T':'F',
 			pOptions->record_output ? 'T':'F',
-			pOptions->sequence_name.toAscii().data()
+			qPrintable(pOptions->sequence_name)
 			);
 	fflush(stderr);
 }
@@ -100,9 +100,9 @@ void printBatchTask(t_batch_task * pTask)
 			"\t\t sequence='%s'\n"
 			"\t\t itemsList=%d items\n"
 			, pTask,
-			pTask->title.toAscii().data(),
+			qPrintable(pTask->title),
 			pTask->progress,
-			pTask->sequencePath.toAscii().data(),
+			qPrintable(pTask->sequencePath),
 			pTask->itemsList.count()
 			);
 
@@ -117,7 +117,7 @@ void printBatchTask(t_batch_task * pTask)
 		fprintf(stderr, "\t\t\titem[%d]='%s' former_state=%d is_movie=%c "
 				"proc_state=%d prog=%g treeItem=%p\n",
 				idx,
-				pItem->absoluteFilePath.toAscii().data(),
+				qPrintable(pItem->absoluteFilePath),
 				(int)pItem->former_state,
 				pItem->is_movie ? 'T':'F',
 				(int)pItem->processing_state,
@@ -326,7 +326,7 @@ void BatchFiltersThread::run()
 						{
 							fprintf(stderr, "BatchThread::%s:%d : could not load '%s' as an image\n",
 									__func__, __LINE__,
-									item->absoluteFilePath.toAscii().data());
+									qPrintable(item->absoluteFilePath));
 						}
 
 						if(loadedImage
@@ -374,7 +374,7 @@ void BatchFiltersThread::run()
 							fprintf(stderr, "[Batch] %s:%d : process sequence '%s' on image '%s' (%dx%dx%dx%d)\n",
 									__func__, __LINE__,
 									mpFilterSequencer->getPluginSequenceFile(),
-									item->absoluteFilePath.toAscii().data(),
+									qPrintable(item->absoluteFilePath),
 									loadedImage->width, loadedImage->height,
 									loadedImage->depth, loadedImage->nChannels
 									);
@@ -386,7 +386,7 @@ void BatchFiltersThread::run()
 							{
 								item->processing_state = ERROR_PROCESS;
 								PIAF_MSG(SWLOG_ERROR, "Error processing file item '%s'",
-										 item->absoluteFilePath.toAscii().data());
+										 qPrintable(item->absoluteFilePath));
 							} else {
 								// Store statistics
 								appendTimeUS(retproc /*deltaTus*/);
@@ -446,12 +446,13 @@ void BatchFiltersThread::run()
 						}
 						else {
 							PIAF_MSG(SWLOG_INFO, "Loading '%s' as a movie ...",
-									 item->absoluteFilePath.toAscii().data() );
+									 qPrintable(item->absoluteFilePath) );
 
 							/// @todo : use factory Load ad movie
-							FileVideoAcquisition * fva =
-									(FileVideoAcquisition *)new FFmpegFileVideoAcquisition(
-										item->absoluteFilePath.toUtf8().data());
+							FileVideoAcquisition * fva = FileVideoAcquisitionFactory::CreateInstance(
+										item->absoluteFilePath.toStdString());
+							//		(FileVideoAcquisition *)new FFmpegFileVideoAcquisition(
+							//			qPrintable(item->absoluteFilePath));
 							// Set the prefered mode
 							fva->setOutputFormat(mpBatchTask->options.output_mode);
 							CvSize size = cvSize(fva->getImageSize().width,
@@ -471,7 +472,7 @@ void BatchFiltersThread::run()
 							} else {
 								PIAF_MSG(SWLOG_INFO, "Could load '%s' as a movie "
 										 "... go on processing",
-										 item->absoluteFilePath.toAscii().data() );
+										 qPrintable(item->absoluteFilePath) );
 								IplImage * loadedImage = swCreateImage(size,
 															IPL_DEPTH_8U,
 															mpBatchTask->options.output_mode ? 1:4);
@@ -522,7 +523,7 @@ void BatchFiltersThread::run()
 											else
 											{
 												PIAF_MSG(SWLOG_ERROR, "could not read Y image of '%s ...",
-														 item->absoluteFilePath.toAscii().data() );
+														 qPrintable(item->absoluteFilePath) );
 											}
 
 										}
@@ -537,7 +538,7 @@ void BatchFiltersThread::run()
 											else
 											{
 												PIAF_MSG(SWLOG_ERROR, "could not read RGB32 image of '%s'' ...",
-														 item->absoluteFilePath.toAscii().data() );
+														 qPrintable(item->absoluteFilePath) );
 											}
 										}
 									}
@@ -545,10 +546,10 @@ void BatchFiltersThread::run()
 									if(!read_frame)
 									{
 										PIAF_MSG(SWLOG_INFO, "EOF of '%s ...",
-												 item->absoluteFilePath.toAscii().data() );
+												 qPrintable(item->absoluteFilePath) );
 										if(g_debug_BatchFiltersThread) {
 											fprintf(stderr, "BatchThread::%s:%d : File '%s' EOF\n",
-												__func__, __LINE__, item->absoluteFilePath.toAscii().data()
+												__func__, __LINE__, qPrintable(item->absoluteFilePath)
 												);fflush(stderr);
 										}
 
@@ -565,7 +566,7 @@ void BatchFiltersThread::run()
 										if(retproc < 0) {
 											PIAF_MSG(SWLOG_ERROR, "error processing image # %d of '%s ...",
 													 frame_idx,
-													 item->absoluteFilePath.toAscii().data() );
+													 qPrintable(item->absoluteFilePath) );
 
 											// Set the state to processing error
 											item->processing_state = ERROR_PROCESS;
@@ -655,7 +656,7 @@ void BatchFiltersThread::run()
 														 (float)fva->getFileSize();
 
 	//										fprintf(stderr, "\rProgress '%s' = %4.2f %%",
-	//												item->absoluteFilePath.toAscii().data(),
+	//												item->absoluteFilePath),
 	//												item->progress * 100.f
 	//												);
 										}
@@ -671,7 +672,7 @@ void BatchFiltersThread::run()
 									item->progress = 1.f;
 
 									fprintf(stderr, "File '%s' %s : progress= %4.2f %%",
-											item->absoluteFilePath.toAscii().data(),
+											qPrintable(item->absoluteFilePath),
 											item->processing_state == PROCESSED ? "PROCESSED" : "ERROR_PROCESS",
 											item->progress * 100.f
 											);

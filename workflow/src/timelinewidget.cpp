@@ -82,7 +82,7 @@ void TimeLineWidget::paintEvent( QPaintEvent * e)
 
 		PIAF_MSG(SWLOG_TRACE, "\t\tadded bookmark name='%s' "
 				 "prevAbsPos=%lld prevKeyFrame=%lld nbFrameSinceKey=%d",
-				 bkmk.name.toAscii().data(),
+				 qPrintable(bkmk.name),
 				 bkmk.prevAbsPosition,
 				 bkmk.prevKeyFramePosition,
 				 bkmk.nbFramesSinceKeyFrame

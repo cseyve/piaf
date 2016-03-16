@@ -130,7 +130,7 @@ t_image_info_struct * EmaImageManager::getInfo(QString filename)
 {
 	m_managedFileListMutex.lock();
 	if(!m_managedFileList.contains(filename)) {
-		EMAIM_printf(EMALOG_TRACE, "File '%s' not found", filename.toUtf8().data());
+		EMAIM_printf(EMALOG_TRACE, "File '%s' not found", qPrintable(filename));
 		m_managedFileListMutex.unlock();
 		return NULL;
 	}
@@ -138,7 +138,7 @@ t_image_info_struct * EmaImageManager::getInfo(QString filename)
 	// Fill with managed
 	int idx = m_managedFileList.indexOf(filename);
 	if(idx < 0) {
-		EMAIM_printf(EMALOG_TRACE, "File '%s' not found", filename.toUtf8().data());
+		EMAIM_printf(EMALOG_TRACE, "File '%s' not found", qPrintable(filename));
 		m_managedFileListMutex.unlock();
 		return NULL;
 	}
@@ -159,16 +159,16 @@ t_image_info_struct * EmaImageManager::getInfo(QString filename)
 
 
 	EMAIM_printf(EMALOG_DEBUG, "File '%s' matches ?",
-				 filename.toAscii().data());
+				 qPrintable(filename));
 	EMAIM_printf(EMALOG_DEBUG, " pinfo=%p (file='%s')",
-				 pinfo, pinfo->filepath.toAscii().data());
+				 pinfo, qPrintable(pinfo->filepath));
 
 	// Security : check filename
 	if(filename.compare(pinfo->filepath) != 0) {
 		EMAIM_printf(EMALOG_TRACE,
 					 "File '%s' mismatches pinfo={filename='%s'}",
-					 filename.toUtf8().data(),
-					 pinfo->filepath.toUtf8().data());
+					 qPrintable(filename),
+					 qPrintable(pinfo->filepath));
 		// File at index idx is a wrong file: the fle must have been moved => delete file info at this place
 
 		// Try to find another item
@@ -201,7 +201,7 @@ int EmaImageManager::appendFile(QString filename) {
 	m_managedFileListMutex.lock();
 	// if not already managed
 	if(m_managedFileList.contains(filename)) {
-		EMAIM_printf(EMALOG_DEBUG, "Already managed : '%s'", filename.toUtf8().data());
+		EMAIM_printf(EMALOG_DEBUG, "Already managed : '%s'", qPrintable(filename));
 		m_managedFileListMutex.unlock();
 		return 0;
 	}
@@ -225,7 +225,7 @@ int EmaImageManager::removeFile(QString filename) {
 	m_managedFileListMutex.lock();
 	// if not already managed
 	if(!m_managedFileList.contains(filename)) {
-		EMAIM_printf(EMALOG_DEBUG, "Unknown / not managed : '%s'", filename.toUtf8().data());
+		EMAIM_printf(EMALOG_DEBUG, "Unknown / not managed : '%s'", qPrintable(filename));
 		m_managedFileListMutex.unlock();
 		return 0;
 	}
@@ -282,7 +282,7 @@ void EmaImageManager::run() {
 			while(it != appendList.end()) {
 				fileName = (*it);
 				++it;
-				EMAIM_printf(EMALOG_DEBUG, "[ImgMngThread]\t\tAdding file '%s'...", fileName.toUtf8().data());
+				EMAIM_printf(EMALOG_DEBUG, "[ImgMngThread]\t\tAdding file '%s'...", qPrintable(fileName));
 
 				// check if image is already known, eg if it already has a thumb and data
 				QFileInfo fi(fileName);
@@ -290,7 +290,7 @@ void EmaImageManager::run() {
 				{
 					EMAIM_printf(EMALOG_ERROR, "[imgMngThread]\t\tERROR: file '%s'"
 								 "does not exists !!!\n\n",
-								 fileName.toUtf8().data()
+								 qPrintable(fileName)
 								 );
 				}
 				else {
@@ -299,14 +299,14 @@ void EmaImageManager::run() {
 					QFileInfo data_fi(m_cacheDirectory+"/"+fi.fileName()+".xml");
 					QString thumbPath = thumb_fi.absoluteFilePath();
 					EMAIM_printf(EMALOG_DEBUG, "[ImgMngThread]\t\tThumb ? for file '%s' : thumb='%s'",
-								 fileName.toUtf8().data(),
-								 thumb_fi.absoluteFilePath().toAscii().data());
+								 qPrintable(fileName),
+								 qPrintable(thumb_fi.absoluteFilePath()));
 					t_image_info_struct * new_info = NULL;
 					if(thumb_fi.exists() && data_fi.exists())
 					{
 						EMAIM_printf(EMALOG_DEBUG, "[ImgMngThread]\t\tThumb & data found for file '%s' : thumb='%s'",
-									 fileName.toUtf8().data(),
-									 thumb_fi.absoluteFilePath().toAscii().data());
+									 qPrintable(fileName),
+									 qPrintable(thumb_fi.absoluteFilePath()));
 						// Check if data exists
 						new_info = new t_image_info_struct;
 						clearImageInfoStruct(new_info);
@@ -322,8 +322,8 @@ void EmaImageManager::run() {
 							// because either the file was moved, or it's generic
 							// name like snapshot1.png snapshot2.png ...
 							EMAIM_printf(EMALOG_WARNING, "[ImgMngThread]\t\tfile path mismatch '%s' != cache='%s'",
-										 fileName.toAscii().data(),
-										 new_info->filepath.toAscii().data());
+										 qPrintable(fileName),
+										 qPrintable(new_info->filepath));
 							// Delete cache because it's
 							// - obsolete : file has moved
 							// - or useless because the user later work with another file,
@@ -340,7 +340,7 @@ void EmaImageManager::run() {
 							// Copy thumb
 							IplImage * rgbImage =
 									new_info->thumbImage.iplImage =
-									cvLoadImage(thumb_fi.absoluteFilePath().toUtf8().data());
+									cvLoadImage(qPrintable(thumb_fi.absoluteFilePath()));
 
 							//					if(rgbImage && rgbImage->nChannels > 1)
 							//					{
@@ -352,7 +352,7 @@ void EmaImageManager::run() {
 							//						{
 							//						default:
 							//							PIAF_MSG(SWLOG_ERROR, "unsupported nChannels=%d for '%s'",
-							//									 rgbImage->nChannels, thumb_fi.absoluteFilePath().toUtf8().data());
+							//									 rgbImage->nChannels, thumb_fi.absoluteFilePath()));
 							//							break;
 							//						case 3:
 							//							cvCvtColor(rgbImage, new_info->thumbImage.iplImage, CV_BGR2RGB);
@@ -364,7 +364,9 @@ void EmaImageManager::run() {
 							//						tmReleaseImage(&rgbImage);
 							//					}
 
-							new_info->thumbImage.fullpath = thumb_fi.absoluteFilePath().toUtf8().data();
+							const char * fullpath = qPrintable(thumb_fi.absoluteFilePath());
+							new_info->thumbImage.fullpath = new char [strlen(fullpath) + 1];
+							strcpy(new_info->thumbImage.fullpath, fullpath);
 							new_info->thumbImage.compressed = NULL;
 							new_info->thumbImage.compressed_size = 0;
 
@@ -390,7 +392,7 @@ void EmaImageManager::run() {
 							new_info->thumbImage.iplImage = tmCloneImage(l_info.thumbImage.iplImage);
 
 							// save thumb
-							cvSaveImage(thumbPath.toUtf8().data(),
+							cvSaveImage(qPrintable(thumbPath),
 										new_info->thumbImage.iplImage );
 
 							// Copy HSV histo

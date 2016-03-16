@@ -25,9 +25,9 @@
 #ifndef IMAGEINFOWIDGET_H
 #define IMAGEINFOWIDGET_H
 
-#include <QtGui/QWidget>
-#include <QtGui/QLabel>
-#include <QtGui/QPushButton>
+#include <QWidget>
+#include <QLabel>
+#include <QPushButton>
 
 #include "imageinfo.h"
 

@@ -95,7 +95,7 @@ void BatchQueueWidget::appendBatchTask(t_batch_task * pTask)
 	if(!pTask) { return; }
 
 	PIAF_MSG(SWLOG_INFO, "Adding new task { title='%s' %d files}",
-			 pTask->title.toAscii().data(),
+			 qPrintable(pTask->title),
 			 pTask->itemsList.count()
 			 );
 
@@ -114,7 +114,7 @@ BatchQueueTreeWidgetItem::BatchQueueTreeWidgetItem(QTreeWidget * pparent, t_batc
 	if(mpBatchTask)
 	{
 		PIAF_MSG(SWLOG_INFO, "Adding new task { title='%s' %d files}",
-				 pTask->title.toAscii().data(),
+				 qPrintable(pTask->title),
 				 pTask->itemsList.count()
 				 );
 		setText(0, mpBatchTask->title );

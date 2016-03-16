@@ -404,12 +404,12 @@ int ImageInfo::readMetadata(QString filename) {
 		// IPTC - IPTC - IPTC - IPTC - IPTC - IPTC - IPTC - IPTC - IPTC -
 		Exiv2::IptcData &iptcData = image->iptcData();
 		if (iptcData.empty()) {
-			std::string error(filename.toAscii().data());
+			std::string error(filename.toUtf8().data());
 			error += ": No IPTC data found in the file";
 			if(g_debug_ImageInfo) {
 				fprintf(stderr, "\t[ImageInfo %p]::%s:%d: No IPTC data found in the file: '%s' => throw error\n",
 						this, __func__, __LINE__,
-						filename.toAscii().data() );
+						filename.toUtf8().data() );
 			}
 			throw Exiv2::Error(1, error);
 		}
@@ -458,7 +458,7 @@ int ImageInfo::loadMovieFile(QString filename)
 		return -1;
 	}
 
-	PIAF_MSG(SWLOG_INFO, "open file '%s'", fi.absoluteFilePath().toAscii().data())
+	PIAF_MSG(SWLOG_INFO, "open file '%s'", fi.absoluteFilePath().toUtf8().data())
 
 	m_image_info_struct.filesize = fi.size();
 
@@ -515,15 +515,15 @@ int ImageInfo::loadFile(QString filename)
 	// File info
 	QFileInfo fi(filename);
 	if(!fi.exists()) {
-		fprintf(stderr, "ImageInfo::%s:%d: file '%s' oes not exists (with Qt)\n",
-				__func__, __LINE__, filename.toAscii().data());
+		fprintf(stderr, "ImageInfo::%s:%d: file '%s' does not exists (with Qt)\n",
+				__func__, __LINE__, qPrintable(filename));
 		return -1;
 	}
 
 	m_image_info_struct.filesize = fi.size();
 
 	fprintf(stderr, "ImageInfo::%s:%d: reading file '%s' ...\n",
-			__func__, __LINE__, filename.toAscii().data());
+			__func__, __LINE__, qPrintable(filename));
 
 	// LOAD IMAGE PIXMAP
 	m_originalImage = cvLoadImage(filename.toUtf8().data());
@@ -531,7 +531,7 @@ int ImageInfo::loadFile(QString filename)
 
 	if(!m_originalImage) {
 		fprintf(stderr, "ImageInfo::%s:%d: cannot load image '%s' (with openCV)\n",
-				__func__, __LINE__, filename.toAscii().data());
+				__func__, __LINE__, qPrintable(filename));
 
 		// Load as movie
 		loadMovieFile(filename);
@@ -549,7 +549,7 @@ int ImageInfo::loadFile(QString filename)
 
 		if(g_debug_ImageInfo) {
 			fprintf(stderr, "\tImageInfo::%s:%d : loaded '%s' : %dx%d x %d\n", __func__, __LINE__,
-					filename.toAscii().data(),
+					qPrintable(filename),
 					m_originalImage->width, m_originalImage->height,
 					m_originalImage->nChannels );
 		}
@@ -1071,7 +1071,7 @@ void saveImageInfoStruct(t_image_info_struct * pinfo, QString path)
 		path = pinfo->cache_file;
 	}
 	fprintf(stderr, "[ImageInfo %s:%d : saving XML cache in '%s'\n",
-			__func__, __LINE__, path.toAscii().data());
+			__func__, __LINE__, qPrintable(path));
 
 	QDomDocument infoDoc;
 	QDomElement elemFileInfo = infoDoc.createElement("FileInfo");
@@ -1156,10 +1156,10 @@ void saveImageInfoStruct(t_image_info_struct * pinfo, QString path)
 	elemFileInfo.appendChild(elemImgProc);
 
 	infoDoc.appendChild(elemFileInfo);
-	PIAF_MSG(SWLOG_TRACE, "saving '%s'", path.toAscii().data());
+	PIAF_MSG(SWLOG_TRACE, "saving '%s'", qPrintable(path));
 	QFile fileout( path );
 	if( !fileout.open( QFile::WriteOnly ) ) {
-		PIAF_MSG(SWLOG_ERROR, "cannot save '%s'", path.toAscii().data());
+		PIAF_MSG(SWLOG_ERROR, "cannot save '%s'", qPrintable(path));
 		return ;
 	}
 
@@ -1188,7 +1188,7 @@ void printImageInfoStruct(t_image_info_struct * pinfo)
 	if(!pinfo) { return; }
 	// FILE DATA
 	fprintf(stderr, "File: '%s' / %ld bytes\n",
-			pinfo->filepath.toAscii().data(), (long)pinfo->filesize);
+			qPrintable(pinfo->filepath), (long)pinfo->filesize);
 	fprintf(stderr, "\t%d x %d x %d\t", pinfo->width, pinfo->height, pinfo->nChannels);
 	fprintf(stderr, "%s\n", pinfo->isMovie ? "Movie" : "Picture");
 
@@ -1196,19 +1196,20 @@ void printImageInfoStruct(t_image_info_struct * pinfo)
 		fprintf(stderr, "\tEXIF: maker='%s', model='%s', date=%s orientation=%c "
 				"focal=%gmm=%g mm(eq 35mm), F/%g, %g s\n"
 				,
-				pinfo->exif.maker.toAscii().data(),
-				pinfo->exif.model.toAscii().data(),
-				pinfo->exif.datetime.toAscii().data(),
+				qPrintable(pinfo->exif.maker),
+				qPrintable(pinfo->exif.model),
+				qPrintable(pinfo->exif.datetime),
 				pinfo->exif.orientation,
 				pinfo->exif.focal_mm, pinfo->exif.focal_eq135_mm,
 				pinfo->exif.aperture, pinfo->exif.speed_s);
 		fprintf(stderr, "\tIPTC: city='%s', sublocation='%s', province/state='%s',"
 				" country code='%s', name='%s'\n",
-				pinfo->iptc.city.toAscii().data(),
-				pinfo->iptc.sublocation.toAscii().data(),
-				pinfo->iptc.provincestate.toAscii().data(),
-				pinfo->iptc.countrycode.toAscii().data(),
-				pinfo->iptc.countryname.toAscii().data() );
+				qPrintable(pinfo->iptc.city),
+				qPrintable(pinfo->iptc.sublocation),
+				qPrintable(pinfo->iptc.provincestate),
+				qPrintable(pinfo->iptc.countrycode),
+				qPrintable(pinfo->iptc.countryname) 
+			);
 	} else {
 		fprintf(stderr, "\t%g fps, FourCC='%s'\n", pinfo->fps, pinfo->FourCC);
 	}
@@ -1218,7 +1219,7 @@ void printImageInfoStruct(t_image_info_struct * pinfo)
 	QStringList::iterator it;
 	for(it = pinfo->keywords.begin(); it != pinfo->keywords.end(); ++it)
 	{
-		fprintf(stderr, "'%s', ", (*it).toAscii().data());
+		fprintf(stderr, "'%s', ", qPrintable((*it)));
 	}
 	fprintf(stderr, "}\n\tImage: %s, sharpness=%g, histo=%g\n",
 			pinfo->grayscaled ? "gray": "color",
@@ -1233,8 +1234,8 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		PIAF_MSG(SWLOG_ERROR, "could not open file '%s' for reading: err=%s",
-				 file.fileName().toAscii().data(),
-				 file.errorString().toAscii().data());
+				 qPrintable(file.fileName()),
+				 qPrintable(file.errorString()));
 		return -1;
 	}
 
@@ -1249,8 +1250,8 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 		PIAF_MSG(SWLOG_ERROR,
 				 "could not read content of file '%s' as XML doc: "
 				 "err='%s' line %d col %d",
-				 file.fileName().toAscii().data(),
-				 errorMsg.toAscii().data(),
+				 qPrintable(file.fileName()),
+				 qPrintable(errorMsg),
 				 errorLine, errorColumn
 				 );
 	}
@@ -1261,7 +1262,7 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 	while(!n.isNull()) {
 		QDomElement e = n.toElement(); // try to convert the node to an element.
 		if(!e.isNull()) {
-			PIAF_MSG(SWLOG_INFO, "\tCategory '%s'", e.tagName().toAscii().data()); // the node really is an element.
+			PIAF_MSG(SWLOG_INFO, "\tCategory '%s'", qPrintable(e.tagName())); // the node really is an element.
 			if(e.tagName().compare("File")==0) // Read file info
 			{
 				pinfo->filepath = e.attribute("fullpath");
@@ -1316,7 +1317,7 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 				if(fsize > 0) {
 					pinfo->filesize = fsize;
 				}
-				strcpy(pinfo->FourCC, e.attribute("valid", "0").toAscii().data());
+				strcpy(pinfo->FourCC, qPrintable(e.attribute("valid", "0")));
 			}
 
 			// Keywords
@@ -1348,7 +1349,7 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 						bkmk.nbFramesSinceKeyFrame = folderElem.attribute("nbFramesSinceKeyFrame").toInt();
 						PIAF_MSG(SWLOG_INFO, "\t\tadded bookmark name='%s' "
 								 "prevAbsPos=%lld prevKeyFrame=%lld nbFrameSinceKey=%d",
-								 bkmk.name.toAscii().data(),
+								 qPrintable(bkmk.name),
 								 bkmk.prevAbsPosition,
 								 bkmk.prevKeyFramePosition,
 								 bkmk.nbFramesSinceKeyFrame

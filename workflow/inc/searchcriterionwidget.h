@@ -1,7 +1,7 @@
 #ifndef SEARCHCRITERIONWIDGET_H
 #define SEARCHCRITERIONWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 namespace Ui {
     class SearchCriterionWidget;
