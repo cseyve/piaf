@@ -23,8 +23,8 @@
  */
 
 
-#include <QtGui/QApplication>
-#include <QtGui/QFileDialog>
+#include <QApplication>
+#include <QFileDialog>
 #include "colibrimainwindow.h"
 
 int main(int argc, char *argv[])

@@ -12,6 +12,7 @@ print_install() {
 QMAKE=qmake
 if [ -f /Developer/Tools/Qt/qmake ]; then 
 	QMAKE="/Developer/Tools/Qt/qmake -r -spec macx-g++ CONFIG+=release "
+	echo "Mac configuration detected: use $QMAKE"
 fi
 
 
@@ -33,10 +34,6 @@ if [ ! -f /usr/local/lib/libSwPluginCore.so ]; then
 fi
 cd ..
 
-cd main/
-echo " + building Legacy GUI in `pwd` ..."
-$QMAKE piaf.pro && make $@ || print_install 
-cd ..
 
 
 echo " + building Workflow GUI..."
@@ -62,6 +59,11 @@ echo
 cd colibri
 echo " + building Colibri GUI in `pwd` ..."
 $QMAKE && make $@ || print_install
+cd ..
+
+cd main/
+echo " + building Legacy GUI in `pwd` ..."
+$QMAKE piaf.pro && make $@ || print_install 
 cd ..
 
 

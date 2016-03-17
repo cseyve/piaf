@@ -471,8 +471,9 @@ QImage iplImageToQImage(IplImage * iplImage) {
 #endif
 
 	if(qImage.depth() == 8) {
+#ifndef _QT5
 		qImage.setNumColors(256);
-
+#endif
 		for(int c=0; c<256; c++) {
 			/* False colors
 			int R=c, G=c, B=c;

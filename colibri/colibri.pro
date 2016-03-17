@@ -4,9 +4,14 @@
 TARGET = Colibri
 QT = core gui
 
+greaterThan(QT_MAJOR_VERSION, 4): {
+	QT += widgets
+	DEFINES += _QT5
+}
+
 linux-g++* {
-	QT += qt3support
-	DEFINES += QT3_SUPPORT
+	#Suppressed support for qt3: QT += qt3support
+	#Suppressed support for qt3: DEFINES += QT3_SUPPORT
 	include(../main/ffmpeg.pri)
 }
 include(../main/opencv.pri)

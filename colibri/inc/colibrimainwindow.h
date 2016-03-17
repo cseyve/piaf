@@ -24,8 +24,8 @@
 #ifndef ColibriMainWindow_H
 #define ColibriMainWindow_H
 
-#include <QtCore/QTimer>
-#include <QtGui/QMainWindow>
+#include <QTimer>
+#include <QMainWindow>
 #include <QThread>
 #include <QMutex>
 #include <QSettings>
