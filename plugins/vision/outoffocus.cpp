@@ -29,6 +29,9 @@
 // include componenet header
 #include "SwPluginCore.h"
 
+
+#include "fftw3.h"
+
 // specific code
 #ifdef HAS_SFFTW
 #include <srfftw.h>
@@ -183,7 +186,7 @@ void underexposure()
 		GammaCorrection[0]=0;
 		for(int i=0; i<=256; i++) {
 			GammaCorrection[i] = (unsigned char)roundf( pow( (double)i/255. , underexposure_gamma)*255.f);
-			fprintf(stderr, "Gamma[%d] = %g^%g = %g\n",
+			fprintf(stderr, "Gamma[%d] = %g^%g = %u\n",
 					i,
 					(double)i/255. , underexposure_gamma,
 					GammaCorrection[i]

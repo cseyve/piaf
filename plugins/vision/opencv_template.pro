@@ -12,9 +12,16 @@ OBJECTS_DIR 	= 	.obj
 include(../../main/opencv.pri)
 
 
+# If a local file exists for the plugin, add it
+ADDPRI = $$(SRCNAME).pri
+exists($$ADDPRI) {
+	message( For src = $$SRCNAME an additional .pri exists: $$ADDPRI)
+	include($$ADDPRI)
+}
+
 unix:LIBS += -L/usr/local/lib 
 
-LIBS += -pg 
+#LIBS += -pg 
 
 unix:DEFINES += VERSION __LINUX_VERSION__
 
@@ -31,8 +38,11 @@ DEPENDPATH += $$INCLUDEPATH
 LIBS += -L/usr/local/lib/ -lSwPluginCore
 
 # in case the installation was not done, use local link
-LIBS += -L../../piaflib
-
+linux*arm*: {
+	LIBS += -L../../lib/arm
+} else {
+	LIBS += -L../../lib/x86
+}
 linux-g++:TMAKE_CXXFLAGS += -g -Wall -O2 -pg \
 	-fexceptions -Wimplicit -Wreturn-type \
 	-Wunused -Wswitch -Wcomment -Wuninitialized -Wparentheses  \

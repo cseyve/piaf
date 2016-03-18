@@ -1,7 +1,7 @@
 #ifndef COLIBRITHREAD_H
 #define COLIBRITHREAD_H
-#include <QtCore/QTimer>
-#include <QtGui/QMainWindow>
+#include <QTimer>
+
 #include <QThread>
 #include <QMutex>
 #include <QSettings>

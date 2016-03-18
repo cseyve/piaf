@@ -8,6 +8,10 @@ QT       += core
 
 QT       -= gui
 
+greaterThan(QT_MAJOR_VERSION, 4): {
+	DEFINES += _QT5
+}
+
 TARGET = colibri-console
 CONFIG   += console
 CONFIG   -= app_bundle

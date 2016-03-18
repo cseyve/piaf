@@ -670,7 +670,9 @@ void EmaMainWindow::on_actionQuit_activated()
 
 void EmaMainWindow::on_actionEdit_plugins_activated()
 {
+	EMAMW_printf(EMALOG_INFO, "Open plugins edition dialog\n");
 	PluginEditDialog * pluginDialog = new PluginEditDialog(NULL);
+
 	pluginDialog->show();
 
 	connect(pluginDialog, SIGNAL(accepted()), ui->pluginManagerForm, SLOT(slot_refreshFilters()));

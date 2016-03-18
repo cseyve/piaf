@@ -441,9 +441,8 @@ linux-g++: {
 	DEFINES += __LINUX__
 	TMAKE_CXXFLAGS += -g \
 		-Wall \
-		-O0 \
+		-O2 \
 		-fexceptions \
-		-Wimplicit \
 		-Wreturn-type \
 		-Wunused \
 		-Wswitch \
