@@ -337,11 +337,11 @@ private slots:
 	void on_mainDisplayWidget_signalPluginsButtonClicked();
 
 	// MAIN MENU ACTION
-	void on_actionQuit_activated();
-	void on_actionEdit_plugins_activated();
-	void on_actionBatch_processor_activated();
-	void on_actionConvert_images_to_AVI_activated();
-	void on_actionAbout_activated();
+	void on_actionQuit_triggered();
+	void on_actionEdit_plugins_triggered();
+	void on_actionBatch_processor_triggered();
+	void on_actionConvert_images_to_AVI_triggered();
+	void on_actionAbout_triggered();
 
 	void slot_appendNewPictureThumb( QString  );
 

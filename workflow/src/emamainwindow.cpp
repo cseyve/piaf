@@ -662,13 +662,13 @@ void EmaMainWindow::on_mainDisplayWidget_signalPluginsButtonClicked()
 
 
 
-void EmaMainWindow::on_actionQuit_activated()
+void EmaMainWindow::on_actionQuit_triggered()
 {
 	saveSettings();
 	close();
 }
 
-void EmaMainWindow::on_actionEdit_plugins_activated()
+void EmaMainWindow::on_actionEdit_plugins_triggered()
 {
 	EMAMW_printf(EMALOG_INFO, "Open plugins edition dialog\n");
 	PluginEditDialog * pluginDialog = new PluginEditDialog(NULL);
@@ -684,14 +684,14 @@ void EmaMainWindow::on_actionEdit_sequences_triggered()
 	seqDialog->show();
 }
 
-void EmaMainWindow::on_actionBatch_processor_activated()
+void EmaMainWindow::on_actionBatch_processor_triggered()
 {
 	statusBar()->showMessage( tr("Starting batch in new window") );
 	BatchProgressWidget * batchProc = new BatchProgressWidget(NULL);
 	batchProc->show();
 }
 
-void EmaMainWindow::on_actionConvert_images_to_AVI_activated()
+void EmaMainWindow::on_actionConvert_images_to_AVI_triggered()
 {
 	ImageToAVIDialog * pconvertDialog = new ImageToAVIDialog();
 
@@ -701,7 +701,7 @@ void EmaMainWindow::on_actionConvert_images_to_AVI_activated()
 	pconvertDialog->show();
 }
 
-void EmaMainWindow::on_actionAbout_activated()
+void EmaMainWindow::on_actionAbout_triggered()
 {
 	QPixmap pix(":/icons/piaf-about.png");
 	if(g_splash) {
@@ -2774,5 +2774,4 @@ void EmaMainWindow::on_actionRemove_all_files_triggered()
 	//ui->gridWidget
 
 }
-
 
