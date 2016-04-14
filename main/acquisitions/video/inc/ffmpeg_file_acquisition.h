@@ -290,7 +290,7 @@ public:
 	int get_pitch();
 	int get_uW();
 	int get_vW();
-    	enum AVPixelFormat get_pixfmt();
+	enum AVPixelFormat get_pixfmt();
 
 
 private:
@@ -305,14 +305,16 @@ private:
 	char m_videoFileName[MAX_PATH_LEN];
 
 	/// FFMPEG Format Context
-	AVFormatContext *m_pFormatCtx;
+	AVFormatContext	*m_pFormatCtx;
+	AVInputFormat	*m_pInputFormat;
+	AVDictionary	*m_pFormatOptions;
 
 	/// FFMPEG Codec Context
-    AVCodecContext  *m_pCodecCtx;
-    AVCodec         *m_pCodec;
+	AVCodecContext  *m_pCodecCtx;
+	AVCodec         *m_pCodec;
 
 	/// FFMPEG Frames
-    AVFrame         *m_pFrame; 
+	AVFrame         *m_pFrame;
 
 	/// FFMPEG Frames decoded in RGB
 	AVFrame         *m_pFrameRGB;

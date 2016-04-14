@@ -144,7 +144,7 @@ protected:
 	/// Video file name
 	char m_videoFileName[MAX_PATH_LEN];
 	/// File size in bytes
-	unsigned long long m_fileSize;
+	int64_t m_fileSize;
 
 	/// Real image size (because codec may change to fit block size)
 	CvSize mImageSize;

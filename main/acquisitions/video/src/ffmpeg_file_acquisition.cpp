@@ -18,11 +18,16 @@
 #include "swvideodetector.h"
 #include "piaf-common.h"
 
+
 #ifdef HAS_SWSCALE
 extern "C" {
 #include <swscale.h>
 }
 #endif // HAS_SWSCALE
+
+extern "C" {
+#include <libavutil/imgutils.h>
+}
 
 #include <errno.h>
 
@@ -34,12 +39,22 @@ extern "C" {
 #define URLPB(pb) &(pb)
 #endif
 
+// The url_ftell changed, so we need to redefine its called
+#if LIBAVFORMAT_VERSION_MAJOR >= 56
+#include <avio.h>
+#define url_ftell	avio_tell
+#define url_fsize	avio_size
+#define url_fseek	avio_seek
+//#define av_open_input_file	avformat_open_input
+
+#endif
+
 #if LIBAVFORMAT_BUILD < CALC_FFMPEG_VERSION(53, 2, 0)
 #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
 #endif
 
 
-#define EXTENSION_FFMPEG	"avi,wmv,mov,mpg,mp4"
+#define EXTENSION_FFMPEG	"avi,wmv,mov,mpg,mp4,MOV"
 //#define EXTENSION_FFMPEG	"avi,wmv,mov,mpg"
 
 std::string FFmpegFileVideoAcquisition::mRegistered =
@@ -96,7 +111,7 @@ unsigned long long FFmpegFileVideoAcquisition::getAbsolutePosition() {
 		return 0;
 	}
 
-	return url_ftell(URLPB(m_pFormatCtx->pb));
+	return 42; ///< \todo FIXME: url_ftell(URLPB(m_pFormatCtx->pb));
 }
 
 void FFmpegFileVideoAcquisition::purge() {
@@ -133,7 +148,11 @@ void FFmpegFileVideoAcquisition::initPlayer() {
 
 	m_videoFileName[0] = '\0';
 	m_videoFileName[127] = '\0';
+
 	m_pFormatCtx 	= NULL;
+	m_pInputFormat	= NULL;
+	m_pFormatOptions= NULL;
+
 	m_pCodecCtx		= NULL;
 	m_pCodec		= NULL;
 	m_pFrame		= NULL;
@@ -164,7 +183,15 @@ void FFmpegFileVideoAcquisition::initPlayer() {
 	if(!m_bAvcodecIsInitialized)
 	{
 		// Register all formats and codecs
+		avcodec_register_all();
+#if CONFIG_AVDEVICE
+		avdevice_register_all();
+#endif
+#if CONFIG_AVFILTER
+		avfilter_register_all();
+#endif
 		av_register_all();
+		avformat_network_init();
 
 		m_bAvcodecIsInitialized = true;
 	}
@@ -199,14 +226,25 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 		mImageInfo.Date = mImageInfo.Tick = 0;
 	}
 
-   // Open video file
-	if(av_open_input_file(&m_pFormatCtx, aDevice, NULL, 0, NULL)!=0) {
+	// Open video file
+	int retopen = avformat_open_input(
+				&m_pFormatCtx,
+				aDevice,
+				m_pInputFormat,
+				&m_pFormatOptions);
+
+	if( retopen != 0) {
 		fprintf(stderr, "FileVA::%s:%d : av_open_input_file failed ! cannot open file '%s'\n", __func__, __LINE__, aDevice);
 		return -1; // Couldn't open file
 	}
 
+	AVDictionary ** opts = NULL;
+
+	int retinfo = avformat_find_stream_info(m_pFormatCtx, opts);
+
+
 	// Retrieve stream information
-	if(av_find_stream_info(m_pFormatCtx)<0)
+	if(retinfo<0)
 	{
 		fprintf(stderr, "FileVA::%s:%d : cannot find stream information for file '%s'\n", __func__, __LINE__, aDevice);
 		return -1; // Couldn't find stream information
@@ -253,7 +291,7 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 	//    pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;
 
 	// Open codec
-    if(avcodec_open(m_pCodecCtx, m_pCodec)<0) {
+	if(avcodec_open2(m_pCodecCtx, m_pCodec, NULL)<0) {
 		fprintf(stderr, "FileVA::%s:%d : cannot open codec\n", __func__, __LINE__ );
 		return -1; // Could not open codec
 	}
@@ -304,13 +342,13 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 	myVDIsInitialised = true;
 
 	// Allocate video frame
-	m_pFrame = avcodec_alloc_frame();
+	m_pFrame = av_frame_alloc();
 	if(m_pFrame==NULL) {
 		fprintf(stderr, "FileVA::%s:%d : cannot allocate frame\n", __func__, __LINE__);
 		return -1;
 	}
 	// Allocate an AVFrame structure
-	m_pFrameRGB = avcodec_alloc_frame();
+	m_pFrameRGB = av_frame_alloc();
 	if(m_pFrameRGB==NULL){
 		fprintf(stderr, "FileVA::%s:%d : cannot allocate frame in RGB space\n", __func__, __LINE__);
 		return -1;
@@ -353,9 +391,15 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 			numBytes_orig); fflush(stderr);*/
 
 	// Determine required buffer size and allocate buffer
-    numBytes = avpicture_get_size(AV_PIX_FMT_RGBA32,
-								  m_pCodecCtx->width,
-								  m_pCodecCtx->height);
+	//imgutils.h: int av_image_get_buffer_size(enum AVPixelFormat pix_fmt, int width, int height, int align);
+	numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGBA,
+										m_pCodecCtx->width,
+										m_pCodecCtx->height,
+										m_pFrame->linesize[0]
+										);
+			//avpicture_get_size(AV_PIX_FMT_RGBA32,
+			//					  m_pCodecCtx->width,
+			//					  m_pCodecCtx->height);
 	fprintf(stderr, "FileVA::%s:%d : allocating %d x %d => m_inbuff [ %d ] in RGBA32....\n",
 			__func__, __LINE__,
 			mImageSize.width,
@@ -378,10 +422,10 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 			numBytes); fflush(stderr);*/
 
 	// Assign appropriate parts of buffer to image planes in pFrameRGB
-    avpicture_fill((AVPicture *)m_pFrameRGB, m_inbuff, AV_PIX_FMT_RGBA32,
+	avpicture_fill((AVPicture *)m_pFrameRGB, m_inbuff, AV_PIX_FMT_RGBA,
 		mImageSize.width, mImageSize.height);
 	myAcqIsInitialised = true;
-	m_fileSize = url_fsize(URLPB(m_pFormatCtx->pb));
+	m_fileSize = avio_size(URLPB(m_pFormatCtx->pb));
 
 	fprintf(stderr, "FileVA::%s:%d : file size : %llu / img=%dx%d\n",
 			__func__, __LINE__, m_fileSize, mImageSize.width, mImageSize.height);
@@ -404,7 +448,8 @@ int FFmpegFileVideoAcquisition::VAcloseVD()
 	// Close the video file
 	if(m_pFormatCtx)
 	{
-		av_close_input_file(m_pFormatCtx);
+		avformat_close_input(&m_pFormatCtx);
+		avformat_free_context(m_pFormatCtx);
 		m_pFormatCtx = NULL;
 	}
 
@@ -929,9 +974,11 @@ int FFmpegFileVideoAcquisition::get_vW() {
 	return m_pFrame->linesize[2];
 }
 
-enum PixelFormat FFmpegFileVideoAcquisition::get_pixfmt()
+enum AVPixelFormat FFmpegFileVideoAcquisition::get_pixfmt()
 {
-	if(!m_pCodecCtx) return (enum PixelFormat)PIX_FMT_NONE;
+	if(!m_pCodecCtx) {
+		return (enum AVPixelFormat)AV_PIX_FMT_NONE;
+	}
 	return m_pCodecCtx->pix_fmt;
 }
 
@@ -1088,7 +1135,10 @@ int FFmpegFileVideoAcquisition::readImageRGB32(unsigned char * image,
 	if(!myAcqIsInitialised)
 		return -1;
 
-	if( (*buffersize) < (long)avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height)) {
+	if( (*buffersize) < (long)avpicture_get_size(
+				AV_PIX_FMT_RGBA,
+				mImageSize.width,
+				mImageSize.height)) {
 
 		return -1;
 	}
@@ -1106,7 +1156,7 @@ int FFmpegFileVideoAcquisition::readImageRGB32(unsigned char * image,
 #if 0
 	// conversion to RGB32 coding
 /*	PRINT_FIXME
-    img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
+    	img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
 				mImageSize.pix_fmt, mImageSize.width, mImageSize.height);
 	PRINT_FIXME
 
@@ -1119,13 +1169,13 @@ int FFmpegFileVideoAcquisition::readImageRGB32(unsigned char * image,
 
 	//int queue_picture(VideoState *is, AVFrame *pFrame, double pts) {
 	struct SwsContext *img_convert_ctx = NULL;
-	PixelFormat dst_pix_fmt ;
+	AVPixelFormat dst_pix_fmt ;
 	AVPicture pict;
 
 	if(1 ) { // vp->bmp) {
 
-        //	  dst_pix_fmt = AV_PIX_FMT_YUV420P;
-        dst_pix_fmt = AV_PIX_FMT_YUV420P;
+        	//	  dst_pix_fmt = AV_PIX_FMT_YUV420P;
+        	dst_pix_fmt = AV_PIX_FMT_YUV420P;
 
 		/* point pict at the queue */
 		//	pict.data[0] = vp->bmp->pixels[0];
@@ -1166,14 +1216,14 @@ int FFmpegFileVideoAcquisition::readImageRGB32(unsigned char * image,
 				  pict.data, pict.linesize);
 		if(0) {
 			memcpy(image, m_inbuff,
-				   avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height));
+				   avpicture_get_size(AV_PIX_FMT_RGBA, mImageSize.width, mImageSize.height));
 			IplImage * testImage = cvCreateImageHeader(cvSize(mImageSize.width, mImageSize.height), 8, 4);
 			testImage->imageData = (char *)m_inbuff;
 			cvSaveImage("/dev/shm/FVA.jpg", testImage);
 			cvReleaseImageHeader(&testImage);
 		}
 		else {
-			int pitch = avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height)/mImageSize.height;
+			int pitch = avpicture_get_size(AV_PIX_FMT_RGBA, mImageSize.width, mImageSize.height)/mImageSize.height;
 			u32 * output = (u32 *)image;
 			u32 * input = (u32 *)m_pFrameRGB->data[0];
 			for(int r = 0; r<mImageSize.height; r++)
@@ -1425,14 +1475,14 @@ int FFmpegFileVideoAcquisition::readImageRGB32NoAcq(unsigned char* image, long *
 		fprintf(stderr, "FVA::%s:%d : buffersize is null !!\n", __func__, __LINE__);
 		return -1;
 	}
-	if( (*buffersize) < (long)avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height)){
+	if( (*buffersize) < (long)avpicture_get_size(AV_PIX_FMT_RGBA, mImageSize.width, mImageSize.height)){
 		fprintf(stderr, "FVA::%s:%d : buffersize (%ld bytes) is not big enough : should be %ld !!\n",
 			__func__, __LINE__,
 			(*buffersize),
-			(long)avpicture_get_size(PIX_FMT_RGBA32,
+			(long)avpicture_get_size(AV_PIX_FMT_RGBA,
 				mImageSize.width, mImageSize.height)
 			);
-		*buffersize = (long)avpicture_get_size(PIX_FMT_RGBA32,
+		*buffersize = (long)avpicture_get_size(AV_PIX_FMT_RGBA,
 				mImageSize.width, mImageSize.height);
 		return -1;
 	}
@@ -1441,10 +1491,10 @@ int FFmpegFileVideoAcquisition::readImageRGB32NoAcq(unsigned char* image, long *
 
 	/*fprintf(stderr, "FileVA::%s:%d : m_pFrame=%p m_pFrameRGB=%p m_pCodecCtx=%p size=%d\n", __func__, __LINE__,
 		m_pFrame, m_pFrameRGB, m_pCodecCtx,
-		(int)avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height));
+		(int)avpicture_get_size(AV_PIX_FMT_RGBA, mImageSize.width, mImageSize.height));
 	*/
 #if 0
-    img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
+		img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA, (AVPicture*)m_pFrame,
 					m_pCodecCtx->pix_fmt, mImageSize.width, mImageSize.height);
 /*FIXME	img_convert((AVPicture *)m_pFrameRGB, AV_PIX_FMT_RGBA32, (AVPicture*)m_pFrame,
 				m_pCodecCtx->pix_fmt, mImageSize.width, mImageSize.height);
@@ -1458,7 +1508,7 @@ int FFmpegFileVideoAcquisition::readImageRGB32NoAcq(unsigned char* image, long *
 
 	//int queue_picture(VideoState *is, AVFrame *pFrame, double pts) {
 	struct SwsContext *img_convert_ctx = NULL;
-	PixelFormat dst_pix_fmt ;
+	AVPixelFormat dst_pix_fmt ;
 	AVPicture pict;
 
 	if(1 ) { // vp->bmp) {
@@ -1513,9 +1563,9 @@ int FFmpegFileVideoAcquisition::readImageRGB32NoAcq(unsigned char* image, long *
             if(0)
             {
                 memcpy(image, m_pFrameRGB->data[0],
-					   avpicture_get_size(PIX_FMT_RGBA32, mImageSize.width, mImageSize.height));
+					   avpicture_get_size(AV_PIX_FMT_RGBA, mImageSize.width, mImageSize.height));
             } else {
-				int pitch = avpicture_get_size(PIX_FMT_RGBA32,
+				int pitch = avpicture_get_size(AV_PIX_FMT_RGBA,
 											   mImageSize.width, mImageSize.height)
 										/ mImageSize.height;
                 u32 * output = (u32 *)image;
@@ -1639,7 +1689,7 @@ int FFmpegFileVideoAcquisition::getPalette()
 			fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_YUV422\n", __func__, __LINE__);
 			myVD_palette = VIDEO_PALETTE_YUV422P;
 			break;
-        case AV_PIX_FMT_RGBA32:    ///< Packed pixel, 4 bytes per pixel, BGRABGRA..., stored in cpu endianness
+		case AV_PIX_FMT_RGBA:    ///< Packed pixel, 4 bytes per pixel, BGRABGRA..., stored in cpu endianness
 			fprintf(stderr, "FileVA::%s:%d : palette is VIDEO_PALETTE_RGB32\n", __func__, __LINE__);
 			myVD_palette = VIDEO_PALETTE_RGB32;
 			break;

@@ -170,7 +170,7 @@ win32: exists("C:\Program Files\ffmpeg\include\ffmpeg") {
 }
 
 #just for DEBUG
-	DEFINES -= HAS_FFMPEG
+#	DEFINES -= HAS_FFMPEG
 
 
 
