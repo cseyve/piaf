@@ -3,13 +3,17 @@
 # -------------------------------------------------
 TEMPLATE = app
 
+QT += xml
+message("Qt version $$QT_MAJOR_VERSION")
+# For Qt5
 greaterThan(QT_MAJOR_VERSION, 4): {
+	message("Qt >= 5")
+	QT += gui
 	QT += widgets
+	QT -= network
+	# for use in the code to make the difference
 	DEFINES += _QT5
 }
-
-QT += xml
-
 
 # Use lowercase name for Linux
 linux-g++* {

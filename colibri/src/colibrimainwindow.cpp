@@ -54,6 +54,11 @@ ColibriMainWindow::ColibriMainWindow(QWidget *parent)
 		QString styleSheet = QLatin1String(file.readAll());
 		//setStyleSheet(styleSheet);
 	}
+#ifdef _ANDROID
+	// hide unsupported buttons
+	ui->deskButton->hide();
+
+#endif
 
 	// Obsolete: setRefImage now uses IplImages
 //	qtImage.load(":/icons/Colibri128.png");
@@ -108,7 +113,7 @@ ColibriMainWindow::~ColibriMainWindow()
 int ColibriMainWindow::setPluginSequence(QString sequencepath)
 {
 
-#ifndef _WIN32
+#ifndef NO_PLUGIN
 	if(sequencepath.isEmpty()) {
 		QString fileName = QFileDialog::getOpenFileName(this, tr("Open plugin sequence file"),
 														 mLastSettings.lastPluginsDir,
@@ -134,7 +139,7 @@ int ColibriMainWindow::setPluginSequence(QString sequencepath)
 		return -1;
 	}
 #else
-	/// \todo port to win32
+	/// \todo port to win32, android
 #endif
 	return 0;
 }
@@ -493,7 +498,7 @@ QImage iplImageToQImage(IplImage * iplImage) {
 void ColibriMainWindow::computeImage(IplImage * iplImage) {
 	if(!iplImage) return;
 
-#ifndef WIN32
+#ifndef NO_PLUGIN
 //	fprintf(stderr, "[Colibri] %s:%d : process sequence '%s' on image (%dx%dx%d)\n",
 //			__func__, __LINE__,
 //			mFilterManager.getPluginSequenceFile(),
@@ -504,6 +509,7 @@ void ColibriMainWindow::computeImage(IplImage * iplImage) {
 	int retproc = mFilterManager.processImage(iplImage, &mOutputImage);
 #else
 	/// \todo port to Win32
+	int retproc = -1; // do not display this result (because mOutputImage is null
 #endif
 	// Display image as output
 	if(retproc > 0 && mOutputImage)

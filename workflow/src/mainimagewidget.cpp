@@ -194,6 +194,20 @@ void MainImageWidget::slotUpdateImage()
 			OSDStr += "\n" + dateTime.toString();
 		}
 
+		// EXIF info
+		if(!mImageInfo.exif.datetime.isNull()) {
+			OSDStr += "\n" + tr("EXIF: ") + (mImageInfo.exif.datetime);
+			OSDStr += "\n" + mImageInfo.exif.maker + "/" + mImageInfo.exif.model + "/" + mImageInfo.exif.software;
+			OSDStr += "\n"
+					+ tr("f=") + QString::number(mImageInfo.exif.focal_mm, 'g', 2) + "mm\n"
+					+ tr("F/") + QString::number(mImageInfo.exif.aperture, 'g', 2)
+						+ tr(" T=") + QString::number(mImageInfo.exif.speed_s) + "s"
+						+ " " + QString::number(mImageInfo.exif.ISO) + "iso"
+					+ " " + (mImageInfo.exif.flash ? tr("no flash"):tr("with flash"))
+					;
+		}
+
+
 		/** ODS LABELS OVER THE IMAGE */
 		m_ui->OSDLabel->setText(OSDStr);
 		m_ui->OSDLabel_2->setText(OSDStr);

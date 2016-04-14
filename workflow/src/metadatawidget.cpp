@@ -68,10 +68,41 @@ void MetadataWidget::setImageInfo(t_image_info_struct * p_image_info_struct)
 {
 	if(!p_image_info_struct) return;
 	QString displayStr;
+/*
+ * http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif/exposureprogram.html
+ *
+ *  The class of the program used by the camera to set exposure when the picture is taken.
+
+The specification defines these values:
+
+0 = Not defined
+1 = Manual
+2 = Normal program
+3 = Aperture priority
+4 = Shutter priority
+5 = Creative program (biased toward depth of field)
+6 = Action program (biased toward fast shutter speed)
+7 = Portrait mode (for closeup photos with the background out of focus)
+8 = Landscape mode (for landscape photos with the background in focus)
+ *
+ */
+	const char c_ExposureModes[9][16] = {
+		  "Not defined"
+		, "Manual"
+		, "Normal"
+		, "Aperture"
+		, "Shutter"
+		, "Creative"
+		, "Action"
+		, "Portrait"
+		, "Landscape"
+	};
+
 
 //	DEBUG_MSG("p_image_info_struct=%p / FIXME : disabled", p_image_info_struct);
 //	DEBUG_MSG("model='%s'", p_image_info_struct->model.toAscii().data());
-	m_ui->makerLineEdit->setText(p_image_info_struct->exif.model);
+	m_ui->makerLineEdit->setText(p_image_info_struct->exif.maker + "/" + p_image_info_struct->exif.model);
+	m_ui->softwareLineEdit->setText(p_image_info_struct->exif.software);
 
 	// Orientation
 	//exifMaker = exifData["Exif.Image.Orientation"]; str = exifMaker.toString();
@@ -103,7 +134,7 @@ void MetadataWidget::setImageInfo(t_image_info_struct * p_image_info_struct)
 	//exifMaker = exifData["Exif.Photo.FNumber"]; str = exifMaker.toString();
 	//displayStr = QString::fromStdString(str);
 	//m_image_info_struct.aperture = rational_to_float(displayStr);
-	displayStr.sprintf("%g", p_image_info_struct->exif.aperture );
+	displayStr.sprintf("F/%g", p_image_info_struct->exif.aperture );
 	m_ui->apertureLineEdit->setText(displayStr);
 
 	// Speed
@@ -112,7 +143,7 @@ void MetadataWidget::setImageInfo(t_image_info_struct * p_image_info_struct)
 	//m_image_info_struct.speed_s = rational_to_float(displayStr);
 	if(p_image_info_struct->exif.speed_s > 0) {
 		if(p_image_info_struct->exif.speed_s < 1.f)
-			displayStr.sprintf("1/%d s", (int)(1.f/p_image_info_struct->exif.speed_s) );
+			displayStr.sprintf("1/%d s", (int)(1.f/p_image_info_struct->exif.speed_s + 0.5f) );
 		else
 			displayStr.sprintf("%g s", (p_image_info_struct->exif.speed_s) );
 	}
@@ -120,9 +151,47 @@ void MetadataWidget::setImageInfo(t_image_info_struct * p_image_info_struct)
 
 	m_ui->speedLineEdit->setText(displayStr);
 
+	if(p_image_info_struct->exif.flash>0) {
+		m_ui->flashLineEdit->setText(tr("Flash!"));
+	} else if(p_image_info_struct->exif.flash==0) {
+		m_ui->flashLineEdit->setText("");
+	} else {
+		m_ui->flashLineEdit->setText("?");
+	}
+
+	if(p_image_info_struct->exif.focus_distance > 0) {
+		displayStr.sprintf("%g m", (p_image_info_struct->exif.focus_distance) );
+	}
+	else displayStr = "??";
+
+	m_ui->distanceLineEdit->setText(displayStr);
+
+	if(p_image_info_struct->exif.ExposureProgram>=0 && p_image_info_struct->exif.ExposureProgram<=8) {
+		m_ui->programLineEdit->setText(QString(c_ExposureModes[p_image_info_struct->exif.ExposureProgram]));
+	} else {
+		m_ui->programLineEdit->setText(tr("Prg:")+QString::number(p_image_info_struct->exif.ExposureProgram));
+	}
+	displayStr.sprintf("ROI: %d,%d,%d,%d",
+					   p_image_info_struct->exif.SubjectArea[0],
+					   p_image_info_struct->exif.SubjectArea[1],
+					   p_image_info_struct->exif.SubjectArea[2],
+					   p_image_info_struct->exif.SubjectArea[3]
+					   );
+
+
+	m_ui->subjectAreaLineEdit->setText(displayStr);
+
+	// Size
+	displayStr.sprintf("Size: %dx%d / SubImage=%dx%d",
+					   p_image_info_struct->width,
+					   p_image_info_struct->height,
+					   p_image_info_struct->exif.ImageWidth,
+					   p_image_info_struct->exif.ImageHeight
+					   );
+
 	// ISO
 //	exifMaker = exifData["Exif.Photo.ISOSpeedRatings"]; str = exifMaker.toString();
-	displayStr.sprintf("%d", p_image_info_struct->exif.ISO);
+	displayStr.sprintf("%diso", p_image_info_struct->exif.ISO);
 //		displayStr = rational(displayStr);
 //	m_image_info_struct.ISO = (int)rational_to_float(displayStr);
 	m_ui->isoLineEdit->setText(displayStr);

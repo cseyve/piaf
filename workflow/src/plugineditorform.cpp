@@ -426,9 +426,10 @@ void PluginEditorForm::updateSelectedView()
 void PluginEditorForm::setWorkspace(QWorkspace * wsp) {
 	pWorkspace = wsp;
 
-#ifndef _QT5
 	if(pWorkspace) {
+#ifndef _QT5
 		((QWorkspace *)pWorkspace)->addWindow((QWidget *)this);
+#endif
 		mHasGUI = true;
 
 		QPixmap winIcon = QPixmap(":images/pixmaps/IconFilters.png");
@@ -436,7 +437,6 @@ void PluginEditorForm::setWorkspace(QWorkspace * wsp) {
 
 		show();
 	}
-#endif
 }
 
 /*  Initialisation :

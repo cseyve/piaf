@@ -150,7 +150,7 @@ private:
 
 	/** @brief Start background thread for capture source */
 	void startBackgroundThread();
-#ifndef WIN32
+#ifndef NO_PLUGIN
 	/// Processing sequence filter
 	FilterSequencer mFilterManager;
 	IplImage * mOutputImage; ///< Piaf plugin image for processing

@@ -35,10 +35,10 @@ target.path = /usr/local/lib/
 target.files = *.so*
 
 
-head.path = /usr/local/include/SwPlugin/
-head.files = inc/*.h ../main/tools/inc/swimage_utils.h
+headers.path = /usr/local/include/piaf/
+headers.files = inc/*.h ../main/tools/inc/swimage_utils.h
 
-INSTALLS += target head
+INSTALLS += target headers
 
 # FIXME : check if OpenCV is installed
 INCLUDEPATH += ../main/tools/inc

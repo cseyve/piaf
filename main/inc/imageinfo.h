@@ -79,20 +79,29 @@ void uncompressCachedImage(t_cached_image *);
 
 /** @brief EXIF metadata for pictures */
 typedef struct {
+	QString software; /*!< Version/Software */
+	QString maker;	/*!< Company which produces this camera */
+	QString model;	/*!< Model of this camera */
 
-	QString maker;	/*! Company which produces this camera */
-	QString model;	/*! Model of this camera */
-
-	QString datetime;	/*! Date/time of the shot */
+	QString datetime;	/*!< Date/time of the shot */
 
 	/************************ IMAGE *********************/
+/* to get the info: exiv2 -PExgnycv  DXO_0807.DNG | less */
+	uint16_t ImageWidth;
+	uint16_t ImageHeight;
+	char orientation;			/*!< Image orientation : 0 for horizontal (landscape), 1 for vertical (portrait) */
+	float focal_mm;				/*!< Real focal in mm */
+	float focal_eq135_mm;		/*!< 135mm equivalent focal in mm (if available) */
+	float aperture;				/*!< F Number */
+	float focus_distance;		/*!< Focus distance 0x9206 Photo        SubjectDistance             Rational    1  674/1000 */
+	float speed_s;				/*!< Speed = shutter opening time in seconds */
+	uint16_t ISO;					/*!< ISO Sensitivity */
+	int8_t flash;
+	uint16_t SubjectArea[4]; ///< 0x9214 Photo        SubjectArea                 Short       4  1606 1357 337 225
+	float EVbias; ///< 0x9204 Photo        ExposureBiasValue           SRational   1  0/3
 
-	char orientation;			/*! Image orientation : 0 for horizontal (landscape), 1 for vertical (portrait) */
-	float focal_mm;				/*! Real focal in mm */
-	float focal_eq135_mm;		/*! 135mm equivalent focal in mm (if available) */
-	float aperture;				/*! F Number */
-	float speed_s;				/*! Speed = shutter opening time in seconds */
-	int ISO;					/*! ISO Sensitivity */
+	int8_t ExposureProgram; ///< from 0x8822 Photo        ExposureProgram             Short       1  2
+
 } t_exif_data;
 
 /** @brief IPTC data */
@@ -119,7 +128,7 @@ typedef struct {
 	QString filepath;			/*!< Full path of image file */
 	QString cache_file;			/*!< Path of XML cache file */
 	unsigned char valid;		/*!< Valid info flag */
-	int width, height;
+	int width, height;			/*!< Original image size */
 	int nChannels;	///< Depth of images
 	bool isMovie;	///< Flag for movie
 

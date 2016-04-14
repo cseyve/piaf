@@ -23,7 +23,16 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -42,8 +51,8 @@
        <rect>
         <x>11</x>
         <y>10</y>
-        <width>121</width>
-        <height>31</height>
+        <width>240</width>
+        <height>120</height>
        </rect>
       </property>
       <property name="font">
@@ -63,6 +72,9 @@ alternate-background-color: rgba(255, 255, 255, 0);</string>
       <property name="text">
        <string>OSD</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
       <property name="wordWrap">
        <bool>true</bool>
       </property>
@@ -72,8 +84,8 @@ alternate-background-color: rgba(255, 255, 255, 0);</string>
        <rect>
         <x>12</x>
         <y>12</y>
-        <width>121</width>
-        <height>31</height>
+        <width>240</width>
+        <height>120</height>
        </rect>
       </property>
       <property name="font">
@@ -93,6 +105,9 @@ alternate-background-color: rgba(0,0 , 0, 255);</string>
       <property name="text">
        <string>OSD</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
       <property name="wordWrap">
        <bool>true</bool>
       </property>
@@ -107,7 +122,16 @@ alternate-background-color: rgba(0,0 , 0, 255);</string>
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>

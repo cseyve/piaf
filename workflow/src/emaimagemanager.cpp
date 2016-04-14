@@ -255,6 +255,7 @@ void EmaImageManager::run() {
 	m_running = true;
 
 
+	PIAF_MSG(SWLOG_INFO, "Started thread for EmaImageManager");
 	while(m_run) {
 		int wait_ms = 400;
 
@@ -428,7 +429,7 @@ void EmaImageManager::run() {
 	}
 
 	m_running = false;
-	EMAIM_printf(EMALOG_INFO, "Processing thread ended.")
+	EMAIM_printf(EMALOG_INFO, "EmaImageManager; Processing thread ended.")
 }
 
 

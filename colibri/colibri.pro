@@ -4,14 +4,21 @@
 TARGET = Colibri
 QT = core gui
 
+# For Qt5
 greaterThan(QT_MAJOR_VERSION, 4): {
 	QT += widgets
+	QT -= network
+	# for use in the code to make the difference
 	DEFINES += _QT5
 }
 
+
+
 linux-g++* {
-	#Suppressed support for qt3: QT += qt3support
-	#Suppressed support for qt3: DEFINES += QT3_SUPPORT
+	DEFINES += _LINUX	
+	UI_DIR = .ui
+	MOC_DIR = .moc
+	OBJ_DIR = .obj
 	include(../main/ffmpeg.pri)
 }
 include(../main/opencv.pri)
@@ -23,6 +30,21 @@ INCLUDEPATH += ../piaflib/inc
 INCLUDEPATH += ../workflow/tools/inc
 
 DEPENDPATH += $$INCLUDEPATH
+
+win32 {
+	message("Win32: No support for plugins")
+# No support for plugins
+	DEFINES += NO_PLUGIN
+}
+
+android* {
+	message("Android: No support for plugins")
+# No support for plugins
+	DEFINES += NO_PLUGIN _ANDROID
+	UI_DIR = .ui-android
+	MOC_DIR = .moc-android
+	OBJ_DIR = .obj-android
+}
 
 CONFIG += qt thread \
     warn_on \
@@ -113,4 +135,9 @@ message( " libs : $$LIBS ")
 message( "FINAL CONFIGURATION ================================================== ")
 message( "")
 message( "")
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+OTHER_FILES += \
+    android/AndroidManifest.xml
 

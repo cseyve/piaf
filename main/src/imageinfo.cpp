@@ -99,6 +99,7 @@ void ImageInfo::purge() {
 void clearImageInfoStruct(t_image_info_struct * pinfo)
 {
 	pinfo->valid = 0;
+
 	pinfo->Date = pinfo->Tick = 0;
 //			// EXIF TAGS
 //			QString  maker;	/*! Company which produces this camera */
@@ -106,13 +107,21 @@ void clearImageInfoStruct(t_image_info_struct * pinfo)
 
 //			QString datetime;	/*! Date/time of the shot */
 
+	pinfo->exif.ImageWidth = pinfo->exif.ImageHeight = 0;
 	pinfo->exif.orientation = 0;			/*! Image orientation : 0 for horizontal (landscape), 1 for vertical (portrait) */
 	pinfo->exif.focal_mm = 				/*! Real focal in mm */
 			pinfo->exif.focal_eq135_mm =		/*! 135mm equivalent focal in mm (if available) */
 			pinfo->exif.aperture =				/*! F Number */
 			pinfo->exif.speed_s = 0.f;				/*! Speed = shutter opening time in seconds */
 	pinfo->exif.ISO = 0;					/*! ISO Sensitivity */
-
+	pinfo->exif.SubjectArea[0] =
+			pinfo->exif.SubjectArea[1] =
+			pinfo->exif.SubjectArea[2] =
+			pinfo->exif.SubjectArea[3] = 0;
+	pinfo->exif.focus_distance = -1.f;
+	pinfo->exif.EVbias = 0;
+	pinfo->exif.ExposureProgram = -1;
+	pinfo->exif.flash = -1;
 //			// IPTC TAGS
 //		// Ref: /usr/share/doc/libexiv2-doc/html/tags-iptc.html
 //		//0x005a 	90 	Iptc.Application2.City 	String 	No 	No 	0 	32 	Identifies city of object data origin according to guidelines established by the provider.
@@ -315,15 +324,66 @@ int ImageInfo::readMetadata(QString filename) {
 		exifMaker = exifData["Exif.Image.Model"];str = exifMaker.toString();
 		m_image_info_struct.exif.model = QString::fromStdString(str);
 
+		exifMaker = exifData["Exif.Image.Software"];str = exifMaker.toString();
+		m_image_info_struct.exif.software = QString::fromStdString(str);
+
 		// DateTime
 		exifMaker = exifData["Exif.Photo.DateTimeOriginal"]; str = exifMaker.toString();
 		m_image_info_struct.exif.datetime = QString::fromStdString(str);
+
+		// Size
+		m_image_info_struct.exif.ImageWidth = m_image_info_struct.width;
+		m_image_info_struct.exif.ImageHeight = m_image_info_struct.height;
+
+		exifData["Exif.SubImage1.ImageWidth"]; str = exifMaker.toString();
+		int l_width = QString::fromStdString(str).toInt();
+		if( l_width > m_image_info_struct.exif.ImageWidth ) { // Probably a DNG
+			exifData["Exif.SubImage1.ImageWidth"]; str = exifMaker.toString();
+			m_image_info_struct.exif.ImageWidth = QString::fromStdString(str).toInt();
+			exifData["Exif.SubImage1.ImageHeight"]; str = exifMaker.toString();
+			m_image_info_struct.exif.ImageHeight = QString::fromStdString(str).toInt();
+		}
 
 		// Orientation
 		exifMaker = exifData["Exif.Image.Orientation"]; str = exifMaker.toString();
 		displayStr = QString::fromStdString(str);
 		m_image_info_struct.exif.orientation = (char)( displayStr.contains("0") ? 0 : 1);
 
+		// Flash
+		exifMaker = exifData["Exif.Photo.Flash"]; str = exifMaker.toString();
+		displayStr = QString::fromStdString(str);
+		m_image_info_struct.exif.flash = (char)( displayStr.contains("0") ? 0 : 1);
+
+		// Subject distance
+		// Photo.SubjectDistance
+		exifMaker = exifData["Exif.Photo.SubjectDistance"]; str = exifMaker.toString();
+		displayStr = QString::fromStdString(str);
+		m_image_info_struct.exif.focus_distance = rational_to_float(displayStr);
+
+		// SubjectArea
+		//0x9214 Photo        SubjectArea                 Short       4  1606 1357 337 225
+		exifMaker = exifData["Exif.Photo.SubjectArea"]; str = exifMaker.toString();
+		displayStr = QString::fromStdString(str);
+		m_image_info_struct.exif.SubjectArea[0] = displayStr.split(" ").at(0).toInt();
+		m_image_info_struct.exif.SubjectArea[1] = displayStr.split(" ").at(1).toInt();
+		m_image_info_struct.exif.SubjectArea[2] = displayStr.split(" ").at(2).toInt();
+		m_image_info_struct.exif.SubjectArea[3] = displayStr.split(" ").at(3).toInt();
+
+		// EVbias
+		exifMaker = exifData["Exif.Photo.ExposureBiasValue"]; str = exifMaker.toString();
+		displayStr = QString::fromStdString(str);
+		m_image_info_struct.exif.EVbias = rational_to_float(displayStr);
+
+		// ExposureProgram
+		exifMaker = exifData["Exif.Photo.ExposureProgram"]; str = exifMaker.toString();
+		displayStr = QString::fromStdString(str);
+		m_image_info_struct.exif.ExposureProgram = displayStr.toInt();
+
+		// MakerNote
+		exifMaker = exifData["Exif.Photo.MakerNote"]; str = exifMaker.toString();
+		str = exifMaker.toString();
+		displayStr = QString::fromStdString(str);
+		fprintf(stderr, "MakerNote='%s'", displayStr.toUtf8().data());
 
 		// Focal
 		exifMaker = exifData["Exif.Photo.FocalLengthIn35mmFilm"];
@@ -1097,6 +1157,18 @@ void saveImageInfoStruct(t_image_info_struct * pinfo, QString path)
 	elemExif.setAttribute("model", pinfo->exif.model);
 	elemExif.setAttribute("orientation", pinfo->exif.orientation);
 	elemExif.setAttribute("speed_s", pinfo->exif.speed_s);
+
+	elemExif.setAttribute("SubImage1.ImageWidth", (int)pinfo->exif.ImageWidth);
+	elemExif.setAttribute("SubImage1.ImageHeight", (int)pinfo->exif.ImageHeight);
+
+	elemExif.setAttribute("Photo.Flash", (int)pinfo->exif.flash);
+	elemExif.setAttribute("Photo.ExposureProgram", pinfo->exif.ExposureProgram);
+	elemExif.setAttribute("Photo.SubjectDistance", pinfo->exif.focus_distance);
+	elemExif.setAttribute("Photo.SubjectArea0", (int)pinfo->exif.SubjectArea[0]);
+	elemExif.setAttribute("Photo.SubjectArea1", (int)pinfo->exif.SubjectArea[1]);
+	elemExif.setAttribute("Photo.SubjectArea2", (int)pinfo->exif.SubjectArea[2]);
+	elemExif.setAttribute("Photo.SubjectArea3", (int)pinfo->exif.SubjectArea[3]);
+
 	elemPicture.appendChild(elemExif);
 
 	QDomElement elemIPTC = infoDoc.createElement("IPTC");
@@ -1285,6 +1357,13 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 						//
 						if(pictureElem.tagName().compare("EXIF") == 0)
 						{
+							// info of subpicture
+							pinfo->exif.ImageWidth = pictureElem.attribute("SubImage1.ImageWidth", "0").toInt();
+							pinfo->exif.ImageHeight = pictureElem.attribute("SubImage1.ImageHeight", "0").toInt();
+							// If not defined, use the original image size
+							if(pinfo->exif.ImageWidth == 0) { pinfo->exif.ImageWidth = pinfo->width; }
+							if(pinfo->exif.ImageHeight == 0) { pinfo->exif.ImageHeight = pinfo->height; }
+
 							pinfo->exif.aperture = pictureElem.attribute("aperture", "0").toFloat();
 							pinfo->exif.datetime = pictureElem.attribute("datetime");
 							pinfo->exif.focal_eq135_mm = pictureElem.attribute("focal_eq35mm", "0").toFloat();
@@ -1293,7 +1372,18 @@ int loadImageInfoStruct(t_image_info_struct * pinfo, QString path)
 							pinfo->exif.maker = pictureElem.attribute("maker", "");
 							pinfo->exif.model = pictureElem.attribute("model", "");
 							pinfo->exif.orientation = pictureElem.attribute("orientation", "0").toUInt();
+							pinfo->exif.focus_distance = pictureElem.attribute("SubjectDistance", "0").toFloat();
 							pinfo->exif.speed_s = pictureElem.attribute("speed_s", "0").toFloat();
+							pinfo->exif.flash = pictureElem.attribute("Photo.Flash").toInt();
+
+							pinfo->exif.ExposureProgram = pictureElem.attribute("Photo.ExposureProgram").toInt();
+							pinfo->exif.focus_distance = pictureElem.attribute("Photo.SubjectDistance").toFloat();
+
+							pinfo->exif.SubjectArea[0] = pictureElem.attribute("Photo.SubjectArea0").toInt();
+							pinfo->exif.SubjectArea[1] = pictureElem.attribute("Photo.SubjectArea1").toInt();
+							pinfo->exif.SubjectArea[2] = pictureElem.attribute("Photo.SubjectArea2").toInt();
+							pinfo->exif.SubjectArea[3] = pictureElem.attribute("Photo.SubjectArea3").toInt();
+
 						}
 
 						if(pictureElem.tagName().compare("IPTC") == 0)

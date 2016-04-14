@@ -8,9 +8,15 @@ CONFIG          =       warn_on release thread
 TARGET          =       $$(SRCNAME)
 OBJECTS_DIR 	= 	.obj
 
-# Include OpenCV definitions
-include(../../main/opencv.pri)
+# libSwPluginCore is in local lib, need it first
 
+# Include OpenCV definitions
+message("*** Include depending opencv.pri")
+!exists(../../main/opencv.pri) {
+	message("ERROR: ../../main/opencv.pri not found")
+} else {
+	include(../../main/opencv.pri)
+}
 
 # If a local file exists for the plugin, add it
 ADDPRI = $$(SRCNAME).pri
@@ -43,7 +49,9 @@ linux*arm*: {
 } else {
 	LIBS += -L../../lib/x86
 }
-linux-g++:TMAKE_CXXFLAGS += -g -Wall -O2 -pg \
+
+
+linux-g++*:TMAKE_CXXFLAGS += -g -Wall -O2 \
 	-fexceptions -Wimplicit -Wreturn-type \
 	-Wunused -Wswitch -Wcomment -Wuninitialized -Wparentheses  \
 	-Wpointer-arith  -Wshadow

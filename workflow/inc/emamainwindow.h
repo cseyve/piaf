@@ -25,7 +25,7 @@
 #ifndef EMAMAINWINDOW_H
 #define EMAMAINWINDOW_H
 
-#include <QtCore/QTimer>
+#include <QTimer>
 
 #include <QMainWindow>
 #include <QTreeWidgetItem>
