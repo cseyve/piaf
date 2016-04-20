@@ -39,8 +39,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>256</width>
-        <height>320</height>
+        <width>243</width>
+        <height>397</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
@@ -85,10 +85,10 @@
        <item row="6" column="3">
         <widget class="QLineEdit" name="programLineEdit">
          <property name="toolTip">
-          <string>Focus distance in m</string>
+          <string>scene mode</string>
          </property>
          <property name="statusTip">
-          <string>Focus distance in meters</string>
+          <string>scene mode</string>
          </property>
          <property name="frame">
           <bool>false</bool>
