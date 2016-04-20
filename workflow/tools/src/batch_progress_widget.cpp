@@ -27,6 +27,7 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDateTime>
 
 #include "FileVideoAcquisition.h"
 
@@ -447,6 +448,7 @@ void BatchProgressWidget::on_viewButton_toggled(bool checked)
 	}
 }
 
+
 void BatchProgressWidget::on_greyButton_toggled(bool checked)
 {
 	mpBatchTask->options.output_mode = checked;
@@ -706,6 +708,26 @@ typedef struct {
 } t_batch_progress;
 
 
+
+void BatchProgressWidget::on_snapButton_clicked() {
+	// Snapshot last image
+	if(mpBatchThread)
+	{
+		mpBatchThread->lockDisplay(true); // lock display for thread-safe execution
+		IplImage * imgRGBdisplay = mpBatchThread->getDisplayImage();
+
+		if(!imgRGBdisplay) {
+			PIAF_MSG(SWLOG_ERROR, "[Batch]: no display image");
+		} else {
+			// Save it
+			QDateTime now = QDateTime::currentDateTime();
+			QString filename = "snap_" + now.toString(tr("yyyy-MM-dd_hhmmss")) + ".png";
+			cvSaveImage(qPrintable(filename), imgRGBdisplay);
+		}
+		mpBatchThread->lockDisplay(false); // unlock display for thread-safe execution
+	}
+}
+
 void BatchProgressWidget::on_mDisplayTimer_timeout()
 {
 	QList<t_batch_item *>::iterator it;
@@ -834,11 +856,14 @@ void BatchProgressWidget::on_mDisplayTimer_timeout()
 			PIAF_MSG(SWLOG_ERROR, "[Batch]: no batch thread");
 		}
 		if(mpBatchThread) {
-			mpBatchThread->lockDisplay(false);
+			mpBatchThread->lockDisplay(true);
 		}
 
 		if(!imgRGBdisplay) {
 			PIAF_MSG(SWLOG_ERROR, "[Batch]: no display image");
+			if(mpBatchThread) {
+				mpBatchThread->lockDisplay(false);
+			}
 		} else {
 //			if(imgRGBdisplay->nChannels == 4 && imgRGBdisplay->imageData[0]==0)
 //			{	// FORCE ALPHA CHANNEL
@@ -875,7 +900,9 @@ void BatchProgressWidget::on_mDisplayTimer_timeout()
 			} else {
 				cvCopy(imgRGBdisplay, mDisplayIplImage);
 			}
-			if(mpBatchThread) mpBatchThread->lockDisplay(false);// image is copied, so we can unlock it
+			if(mpBatchThread) {
+				mpBatchThread->lockDisplay(false);// image is copied, so we can unlock it
+			}
 			fprintf(stderr, "[Batch]::%s:%d : display image: %dx%dx%d => %dx%dx%d\n",
 					__func__, __LINE__,
 					imgRGBdisplay->width, imgRGBdisplay->height, imgRGBdisplay->nChannels,
