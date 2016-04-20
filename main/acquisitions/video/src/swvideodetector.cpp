@@ -173,6 +173,62 @@ int swByteDepth(IplImage * iplImage) {
 
 	return byte_depth;
 }
+
+typedef struct {
+	char * file;  ///< info about the creation point
+	int file_len; ///< info about the creation point
+	char * func;  ///< info about the creation point
+	int func_len; ///< info about the creation point
+	int line;     ///< info about the creation point
+	IplImage * img;
+	bool allocated;///< info to known if the image buffer has been allocated or if it's just a header
+
+} t_registered_IplImage;
+
+std::vector<t_registered_IplImage *> gImageLists;
+void swPrintImages() {
+	std::vector<t_registered_IplImage *>::iterator it = gImageLists.begin();
+	fprintf(stderr, "Images: %d created\n", (int)gImageLists.size());
+	int memory = 0;
+	for(int idx=0 ; it != gImageLists.end(); ++idx, ++it) {
+		t_registered_IplImage * item = *it;
+		fprintf(stderr, "\timage[%d] = %dx%dx%d created at %s %s:%d\n",
+				idx,
+				item->img->width, item->img->height, item->img->nChannels,
+				item->file, item->func, item->line
+				);
+		if (item->allocated) {
+			memory += swByteDepth(item->img) * item->img->width * item->img->height;
+		}
+	}
+	fprintf(stderr, " Total memory=%d bytes\n", memory);
+}
+
+void registerImage(const char * file, const char * func, int line, IplImage * img, bool allocated) {
+	// Create new item
+	t_registered_IplImage item;
+	item.file_len = strlen(file)+1;
+	item.file = new char [item.file_len];
+	strcpy(item.file, file);
+	item.func_len = strlen(func)+1;
+	item.func = new char [item.func_len];
+	strcpy(item.func, func);
+	item.img = img;
+	item.allocated = allocated;
+}
+
+void unregisterImage(const char * file, const char * func, int line, IplImage * img) {
+	std::vector<t_registered_IplImage *>::iterator it = gImageLists.begin();
+
+	for(; it != gImageLists.end(); ) {
+		t_registered_IplImage * item = *it;
+		if(item->img == img) {
+			// Delete it from list
+			gImageLists.erase(it);
+		} else { it++; }
+	}
+}
+
 /* Print image properties */
 void swPrintProperties(IplImage * img) {
 	/*
@@ -237,8 +293,11 @@ void swPrintProperties(IplImage * img) {
 
 }
 
+
+
 /* Create an IplImage width OpenCV's cvCreateImage and clear buffer */
-IplImage * swCreateImage(CvSize size, int depth, int channels) {
+IplImage * obsoleteCreateImage(const char * file, const char * func, int line,
+						 CvSize size, int depth, int channels) {
 
 	/*
 	fprintf(stderr, "[utils] %s:%d : creating IplImage : %dx%d x depth=%d x channels=%d\n",
@@ -254,11 +313,15 @@ IplImage * swCreateImage(CvSize size, int depth, int channels) {
 				img->width, img->height, img->depth, img->nChannels);
 		}
 		memset(img->imageData, 0, sizeof(char) * img->widthStep * img->height);
+		registerImage(file, func, line, img, true);
+
 		return img;
 	} else {
-		fprintf(stderr, "[utils] %s:%d : ERROR : creating IplImage => %dx%d x depth=%d x channels=%d\n",
+		fprintf(stderr, "[utils] %s:%d : ERROR : creating IplImage => %dx%d x depth=%d x channels=%d"
+						" called from [%s] %s:%d\n",
 			__func__, __LINE__,
-			img->width, img->height, img->depth, img->nChannels);
+			size.width, size.height, depth, channels,
+			file, func, line);
 	}
 
 	if(img->width==0 || img->height==0 || img->imageData==0) {
@@ -277,7 +340,8 @@ IplImage * swCreateImage(CvSize size, int depth, int channels) {
 }
 
 /* Create an IplImage header width OpenCV's cvCreateImage and clear buffer */
-IplImage * swCreateImageHeader(CvSize size, int depth, int channels) {
+IplImage * obsoleteCreateImageHeader(const char * file, const char * func, int line,
+							   CvSize size, int depth, int channels) {
 
 	/*
 	fprintf(stderr, "[utils] %s:%d : creating IplImage : %dx%d x depth=%d x channels=%d\n",
@@ -286,27 +350,25 @@ IplImage * swCreateImageHeader(CvSize size, int depth, int channels) {
 	*/
 	IplImage * img = cvCreateImageHeader(size, depth, channels);
 	if(img) {
-
+		registerImage(file, func, line, img, false);
 		return img;
 	} else {
-		fprintf(stderr, "[utils] %s:%d : ERROR : creating IplImage => %dx%d x depth=%d x channels=%d\n",
+		fprintf(stderr, "[utils] %s:%d : ERROR : creating IplImage header => %dx%d x depth=%d x channels=%d"
+						" called from [%s] %s:%d\n",
 			__func__, __LINE__,
-			img->width, img->height, img->depth, img->nChannels);
+			size.width, size.height, depth, channels,
+			file, func, line);
 	}
 
-	if(img->width==0 || img->height==0 || img->imageData==0) {
-		fprintf(stderr, "[utils] %s:%d : ERROR : creating IplImage => %dx%d x depth=%d x channels=%d\n",
-			__func__, __LINE__,
-			img->width, img->height, img->depth, img->nChannels);
-	}
-
-	return img;
+	return NULL;
 }
 
 /* Release an image and clear pointer */
-void swReleaseImage(IplImage ** img) {
+void obsoleteReleaseImage(const char * file, const char * func, int line,
+					IplImage ** img) {
 	if(!img) { return; }
 	if(!(*img) ) { return; }
+	unregisterImage(file, func, line, *img);
 
 	if((*img)->width > 0  && (*img)->height > 0 ) {
 
@@ -332,9 +394,11 @@ void swReleaseImage(IplImage ** img) {
 }
 
 /* Release an image header and clear pointer */
-void swReleaseImageHeader(IplImage ** img) {
+void obsoleteReleaseImageHeader(const char * file, const char * func, int line, IplImage ** img) {
 	if(!img) return;
 	if(!(*img) ) return;
+	unregisterImage(file, func, line, *img);
+
 #ifdef OPENCV_22
 	try {
 		cvReleaseImageHeader(img);

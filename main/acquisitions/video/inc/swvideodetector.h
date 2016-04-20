@@ -66,16 +66,39 @@ void swPrintProperties(IplImage * img);
 int swByteDepth(IplImage * iplImage);
 
 /** @brief Create an IplImage width OpenCV's cvCreateImage and clear buffer */
-IplImage * swCreateImage(CvSize size, int depth, int channels);
+#define swCreateImage(_size, _depth, _channels)		subCreateImage(__FILE__, __func__, __LINE__, (_size), (_depth), (_channels))
+
 /** @brief Create an IplImage header width OpenCV's cvCreateImageHeader */
-IplImage * swCreateImageHeader(CvSize size, int depth, int channels);
+#define swCreateImageHeader(_size, _depth, _channels)	subCreateImageHeader(__FILE__, __func__, __LINE__, (_size), (_depth), (_channels))
+
+/** @brief Release an IplImage width OpenCV's cvCreateImage and free buffer */
+#define swReleaseImage(_img)		subReleaseImage(__FILE__, __func__, __LINE__, (_img))
+
+/** @brief Release an IplImage width OpenCV's cvCreateImage and free buffer */
+#define swReleaseImageHeader(_img)		subReleaseImage(__FILE__, __func__, __LINE__, (_img))
+
+
+
+/** @brief Create an IplImage width OpenCV's cvCreateImage and clear buffer
+
+	and register the allocation and the allocation point to track image memory management
+*/
+IplImage * subCreateImage(const char * file, const char * func, int line, CvSize size, int depth, int channels);
+
+/** @brief Create an IplImage header width OpenCV's cvCreateImageHeader
+
+	and register the allocation and the allocation point to track image memory management
+*/
+IplImage * subCreateImageHeader(const char * file, const char * func, int line, CvSize size, int depth, int channels);
 
 /** @brief Release an image and clear pointer */
-void swReleaseImage(IplImage ** img);
+void subReleaseImage(const char * file, const char * func, int line, IplImage ** img);
+
 /** @brief Release an image header and clear pointer */
-void swReleaseImageHeader(IplImage ** img);
+void subReleaseImageHeader(const char * file, const char * func, int line, IplImage ** img);
 
 /** @brief Convert an image into another */
 int swConvert(IplImage *imageIn, IplImage * imageOut);
 
 #endif
+
