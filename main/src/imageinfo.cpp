@@ -364,10 +364,11 @@ int ImageInfo::readMetadata(QString filename) {
 		//0x9214 Photo        SubjectArea                 Short       4  1606 1357 337 225
 		exifMaker = exifData["Exif.Photo.SubjectArea"]; str = exifMaker.toString();
 		displayStr = QString::fromStdString(str);
-		m_image_info_struct.exif.SubjectArea[0] = displayStr.split(" ").at(0).toInt();
-		m_image_info_struct.exif.SubjectArea[1] = displayStr.split(" ").at(1).toInt();
-		m_image_info_struct.exif.SubjectArea[2] = displayStr.split(" ").at(2).toInt();
-		m_image_info_struct.exif.SubjectArea[3] = displayStr.split(" ").at(3).toInt();
+		QStringList coords= displayStr.split(" ");
+		if(coords.count()>=1) { m_image_info_struct.exif.SubjectArea[0] = coords.at(0).toInt(); }
+		if(coords.count()>=2) { m_image_info_struct.exif.SubjectArea[1] = coords.at(1).toInt(); }
+		if(coords.count()>=3) { m_image_info_struct.exif.SubjectArea[2] = coords.at(2).toInt(); }
+		if(coords.count()>=4) { m_image_info_struct.exif.SubjectArea[3] = coords.at(3).toInt(); }
 
 		// EVbias
 		exifMaker = exifData["Exif.Photo.ExposureBiasValue"]; str = exifMaker.toString();
