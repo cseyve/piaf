@@ -31,7 +31,8 @@
 #include <QDir>
 #include <QString>
 
-int g_EMAImgMng_debug_mode = EMALOG_DEBUG;
+/// \brief Debug level for this mode
+int g_EMAImgMng_debug_mode = EMALOG_INFO;
 
 #define EMAIM_printf(a,...)  { \
 		if(g_EMAImgMng_debug_mode>=(a)) { \
@@ -130,7 +131,7 @@ t_image_info_struct * EmaImageManager::getInfo(QString filename)
 {
 	m_managedFileListMutex.lock();
 	if(!m_managedFileList.contains(filename)) {
-		EMAIM_printf(EMALOG_TRACE, "File '%s' not found", qPrintable(filename));
+		EMAIM_printf(EMALOG_TRACE, "File '%s' not found in known files", qPrintable(filename));
 		m_managedFileListMutex.unlock();
 		return NULL;
 	}
@@ -365,9 +366,9 @@ void EmaImageManager::run() {
 							//						tmReleaseImage(&rgbImage);
 							//					}
 
-							const char * fullpath = qPrintable(thumb_fi.absoluteFilePath());
-							new_info->thumbImage.fullpath = new char [strlen(fullpath) + 1];
-							strcpy(new_info->thumbImage.fullpath, fullpath);
+							QString fullpathStr = thumb_fi.absoluteFilePath();
+							new_info->thumbImage.fullpath = new char [fullpathStr.length() + 1];
+							strcpy(new_info->thumbImage.fullpath, qPrintable(fullpathStr));
 							new_info->thumbImage.compressed = NULL;
 							new_info->thumbImage.compressed_size = 0;
 

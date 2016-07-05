@@ -33,8 +33,11 @@
 #include <errno.h>
 #include <sys/time.h>
 
-
 FILE * logfile = stderr;
+bool g_utils_log = false;
+
+#define UTILS_PRINT(...)	if(g_utils_log && logfile) fprintf(logfile, __VA_ARGS__)
+
 u8 g_debug_alloc = 0;
 u8 g_debug_imgverbose = 0;
 
@@ -382,14 +385,14 @@ IplImage * tmAddBorder4x(IplImage * originalImage) {
 	   || (originalImage->height % 4) > 0
 	   ) {
 
-		fprintf(logfile, "[utils] %s:%d : => Size %dx%d is odd\n",
+		UTILS_PRINT( "[utils] %s:%d : => Size %dx%d is odd\n",
 				__func__, __LINE__, originalImage->width, originalImage->height);
 		int new_width = originalImage->width;
 		while( (new_width % 4)) new_width++;
 		int new_height = originalImage->height;
 		while( (new_height % 4)) new_height++;
 
-		fprintf(logfile, "[utils] %s:%d : => resize to %d x %d \n",
+		UTILS_PRINT( "[utils] %s:%d : => resize to %d x %d \n",
 				__func__, __LINE__, new_width, new_height);
 		IplImage * copyImage = tmCreateImage(
 				cvSize( new_width, new_height),
@@ -561,7 +564,7 @@ void tmFillRegion(IplImage * origImage,
 		fill_height = orig_height - center_y;
 
 	if(fill_width <= 0 || fill_height <= 0) {
-		fprintf(logfile, "imgutils : %s:%d : INVALID clear %dx%d +%d,%d\n",
+		UTILS_PRINT( "imgutils : %s:%d : INVALID clear %dx%d +%d,%d\n",
 			__func__, __LINE__,
 			fill_width, fill_height,
 			center_x, center_y);
@@ -570,7 +573,7 @@ void tmFillRegion(IplImage * origImage,
 	}
 
 	if(g_debug_imgverbose)
-		fprintf(logfile, "imgutils : %s:%d : clear %dx%d +%d,%d\n",
+		UTILS_PRINT( "imgutils : %s:%d : clear %dx%d +%d,%d\n",
 			__func__, __LINE__,
 			fill_width, fill_height,
 			center_x, center_y);
@@ -649,7 +652,7 @@ void tmCloneRegionTopLeft(IplImage * origImage,
 			copy_width = orig_width - src_x;
 	}
 	if(copy_width <= 0 || copy_height<=0) {
-		fprintf(logfile, "imgutils : %s:%d : INVALID clone src=%d,%d+%dx%d => dest=%d,%d\n",
+		UTILS_PRINT( "imgutils : %s:%d : INVALID clone src=%d,%d+%dx%d => dest=%d,%d\n",
 			__func__, __LINE__,
 			src_x, src_y, copy_width, copy_height,
 			dest_x, dest_y);
@@ -658,7 +661,7 @@ void tmCloneRegionTopLeft(IplImage * origImage,
 
 	/*
 	if(g_debug_imgverbose) {
-		fprintf(logfile, "imgutils : %s:%d : clone %d,%d+%dx%d => %d,%d\n",
+		UTILS_PRINT( "imgutils : %s:%d : clone %d,%d+%dx%d => %d,%d\n",
 			__func__, __LINE__,
 			src_x, src_y, copy_width, copy_height,
 			dest_x, dest_y);
@@ -1225,19 +1228,19 @@ float tmCorrelation(
 
 	switch(img1->depth) {
 	case IPL_DEPTH_8S:
-		fprintf(logfile, "[imgutils] %s:%d : unsupported depth IPL_DEPTH_8S\n", __func__, __LINE__);
+		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_8S\n", __func__, __LINE__);
 		break;
 	case IPL_DEPTH_16S:
-		fprintf(logfile, "[imgutils] %s:%d : unsupported depth IPL_DEPTH_16S\n", __func__, __LINE__);
+		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_16S\n", __func__, __LINE__);
 		break;
 	case IPL_DEPTH_32S:
-		fprintf(logfile, "[imgutils] %s:%d : unsupported depth IPL_DEPTH_32S\n", __func__, __LINE__);
+		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_32S\n", __func__, __LINE__);
 		break;
 	case IPL_DEPTH_32F:
-		fprintf(logfile, "[imgutils] %s:%d : unsupported depth IPL_DEPTH_32F\n", __func__, __LINE__);
+		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_32F\n", __func__, __LINE__);
 		break;
 	case IPL_DEPTH_64F:
-		fprintf(logfile, "[imgutils] %s:%d : unsupported depth IPL_DEPTH_64F \n", __func__, __LINE__);
+		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_64F \n", __func__, __LINE__);
 		break;
 	case IPL_DEPTH_8U: {
 
@@ -1303,7 +1306,7 @@ float tmCorrelation(
 		}
 		}break;
 	case IPL_DEPTH_16U:
-		fprintf(logfile, "[imgutils] %s:%d : unsupported depth IPL_DEPTH_16U \n", __func__, __LINE__);
+		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_16U \n", __func__, __LINE__);
 		fprintf(stderr, "[imgutils]	%s:%d : OBSOLETE : correlation between IPL_DEPTH_16U\n",
 			__func__, __LINE__);
 
@@ -1528,7 +1531,7 @@ int tmSearchBestCorrelation(
 						least_worst = l_dist;
 
 					if(g_debug_correlation) {
-						fprintf(logfile, "\timgutils %s:%d : (+%d,+%d) = %f / difftol=%d maxdiff=%d bestbest=%g\n",
+						UTILS_PRINT( "\timgutils %s:%d : (+%d,+%d) = %f / difftol=%d maxdiff=%d bestbest=%g\n",
 								__func__, __LINE__,	dx, dy, l_dist, difftolerance, maxdiff, best_best);
 						u8 * correlationImageBuffer = (u8 *)correlationImage->imageData;
 						correlationImageBuffer[ correlationImage->widthStep * (seed_center_y + dy)
@@ -1549,7 +1552,7 @@ int tmSearchBestCorrelation(
 						retval = 1;
 
 						if(g_debug_imgverbose || g_debug_correlation)
-							fprintf(logfile, "\timgutils %s:%d : current best = "
+							UTILS_PRINT( "\timgutils %s:%d : current best = "
 								"(+%d,+%d) = %f / %d  (%dx%d) bestbest=%g\n",
 								__func__, __LINE__,
 								dx, dy, l_dist, difftolerance,
@@ -1648,7 +1651,7 @@ int tmProcessDiff(int l_FilmType, IplImage * grayImage,  IplImage * medianImage,
 	switch(l_FilmType) {
 	default:
 	case FILM_UNDEFINED: { /* dust can be darker or brighter => absolute value */
-		//fprintf(logfile, "[imgutils] %s:%d : Undefined film type : looking for diffImage = |Blurred - Grayscaled| ...\n",
+		//UTILS_PRINT( "[imgutils] %s:%d : Undefined film type : looking for diffImage = |Blurred - Grayscaled| ...\n",
 		//	__func__, __LINE__);
 		for(int pos=0; pos<width*height; pos++)
 		{
@@ -1660,7 +1663,7 @@ int tmProcessDiff(int l_FilmType, IplImage * grayImage,  IplImage * medianImage,
 		}
 		}break;
 	case FILM_NEGATIVE: /* dust must be brighter => gray - median */
-		//fprintf(logfile, "[imgutils] %s:%d : NEGATIVE film type : looking for diffImage = Grayscaled-Blurred ...\n",
+		//UTILS_PRINT( "[imgutils] %s:%d : NEGATIVE film type : looking for diffImage = Grayscaled-Blurred ...\n",
 		//	__func__, __LINE__);
 		for(int pos=0; pos<width*height; pos++)
 		{
@@ -1672,7 +1675,7 @@ int tmProcessDiff(int l_FilmType, IplImage * grayImage,  IplImage * medianImage,
 		}
 		break;
 	case FILM_POSITIVE: /* dust must be darker => median - gray */
-		//fprintf(logfile, "[imgutils] %s:%d : POSITIVE film type : looking for diffImage = Blurred-Grayscaled ...\n",
+		//UTILS_PRINT( "[imgutils] %s:%d : POSITIVE film type : looking for diffImage = Blurred-Grayscaled ...\n",
 		//	__func__, __LINE__);
 		for(int pos=0; pos<width*height; pos++)
 		{
@@ -2194,12 +2197,12 @@ void tmSaveImage(const char * filename, IplImage * src) {
 		FILE * f = fopen(filename, "wb");
 		if(!f) {
 			int errnum = errno;
-			fprintf(logfile, "imgutils : %s:%d : cannot open file '%s' for writing ! err=%d=%s\n",
+			UTILS_PRINT( "imgutils : %s:%d : cannot open file '%s' for writing ! err=%d=%s\n",
 				__func__, __LINE__, filename, errnum, strerror(errnum));
 			return;
 		}
 
-		fprintf(logfile, "imgutils : %s:%d : saving file '%s' as PNM...\n",
+		UTILS_PRINT( "imgutils : %s:%d : saving file '%s' as PNM...\n",
 				__func__, __LINE__, filename);
 
 

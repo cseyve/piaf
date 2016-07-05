@@ -266,6 +266,9 @@ private:
 	/** @brief purge scaled images */
 	void purgeScaled();
 
+	/** @brief High-level processing function to extract HSV, sharpness, ... */
+	int processQualityInfo();
+
 	/** @brief Process HSV analysis */
 	int processHSV();
 

@@ -142,6 +142,7 @@ EmaMainWindow::EmaMainWindow(QWidget *parent)
 
 	// Add quick collection
 	mpQuickCollection = NULL;
+	mpQuickCollectionRootItem = NULL;
 	QString quickTitle = tr("Quick collection");
 	QList<EmaCollection *>::iterator cit;
 	for(cit = g_workflow_settings.collectionList.begin();
@@ -159,10 +160,11 @@ EmaMainWindow::EmaMainWindow(QWidget *parent)
 		mpQuickCollection = new EmaCollection();
 		mpQuickCollection->title = quickTitle;
 		mpQuickCollection->comment = tr("Quick collection to create temporary selection");
-		mpQuickCollection->treeViewItem =
-		mpQuickCollectionRootItem = new CollecTreeWidgetItem(ui->collecTreeWidget, mpQuickCollection);
-		g_workflow_settings.collectionList.append(mpQuickCollection);
 	}
+
+	mpQuickCollection->treeViewItem =
+		mpQuickCollectionRootItem = new CollecTreeWidgetItem(ui->collecTreeWidget, mpQuickCollection);
+	g_workflow_settings.collectionList.append(mpQuickCollection);
 
 	updateCollectionsTreeWidgetItems();
 
@@ -411,6 +413,11 @@ void EmaMainWindow::loadSettings()
 	}
 
 
+	// Image quality processing options
+	g_workflow_settings.processImageQuality = false;
+	if( mSettings.value("processImageQuality").isValid()) {
+		g_workflow_settings.processImageQuality = mSettings.value("processImageQuality").toBool();
+	}
 
 }
 
@@ -476,6 +483,10 @@ void EmaMainWindow::saveSettings()
 	}
 
 	mSettings.endArray();
+
+	// Image quality processing
+	mSettings.setValue("processImageQuality", g_workflow_settings.processImageQuality);
+
 	// Clear XML tree
 	mSettingsDoc.clear();
 
@@ -569,6 +580,8 @@ void EmaMainWindow::saveSettings()
 		EMAMW_printf(SWLOG_ERROR, "cannot save " PIAFWKFL_SETTINGS_XML);
 		return ;
 	}
+
+
 	QTextStream sout(&fileout);
 	mSettingsDoc.save(sout, 4);
 
@@ -1677,16 +1690,15 @@ void EmaMainWindow::slot_newCollDialog_signalNewCollection(EmaCollection collec)
 
 	EmaCollection * new_collec = new EmaCollection(collec);
 	g_workflow_settings.collectionList.append(new_collec);
-	if(mpCurrentCollection )
+	if( mpCurrentCollection )
 	{
 		EMAMW_printf(SWLOG_INFO, "\tAdding '%s' AS SUB-collection OF '%s'",
 					 qPrintable(collec.title),
 					 qPrintable(mpCurrentCollection->title)
 					 );
-
 		new CollecTreeWidgetItem(mpCurrentCollection->treeViewItem, new_collec);
 	}
-	else
+	else // Create on root element
 	{
 		EMAMW_printf(SWLOG_INFO, "\tAdding '%s' AS new top-level collection",
 					 qPrintable(collec.title));
@@ -1825,6 +1837,7 @@ CollecTreeWidgetItem::CollecTreeWidgetItem(QTreeWidgetItem * treeWidgetItemParen
 	: QTreeWidgetItem(treeWidgetItemParent),
 	mpCollec(pcollec)
 {
+	EMAMW_printf(SWLOG_INFO, "create CollecTreeWidgetItem(collec=%p)", mpCollec);
 	init();
 }
 
@@ -1833,6 +1846,7 @@ CollecTreeWidgetItem::CollecTreeWidgetItem(QTreeWidget * treeWidgetParent,
 	: QTreeWidgetItem(treeWidgetParent),
 	  mpCollec(pcollec)
 {
+	EMAMW_printf(SWLOG_INFO, "create CollecTreeWidgetItem(collec=%p)", mpCollec);
 	init();
 }
 
@@ -1877,7 +1891,10 @@ void CollecTreeWidgetItem::updateDisplay()
 		return;
 	}
 
-	EMAMW_printf(SWLOG_INFO, "update collection %p='%s' / %d files / %d subcolls",
+	EMAMW_printf(SWLOG_INFO,
+				 "update collection %p='%s' "
+				 "/ %d files "
+				 "/ %d subcolls",
 				 mpCollec, mpCollec ? qPrintable(mpCollec->title) : "null",
 				 mpCollec ? mpCollec->filesList.count() : -1,
 				 mpCollec ? mpCollec->subCollectionsList.count() : -1
@@ -1956,6 +1973,7 @@ void CollecTreeWidgetItem::init()
 		setText(0, mpCollec->title);
 		mpCollec->treeViewItem = (QTreeWidgetItem *)this;
 	}
+
 	if(subCollecsList.isEmpty())
 	{
 		QStringList columns;
@@ -2715,7 +2733,7 @@ void EmaMainWindow::on_collecTreeWidget_itemSelectionChanged()
 		CollecTreeWidgetItem * collecItem = (CollecTreeWidgetItem *)parentItem;
 		if(collecItem->mpCollec == mpQuickCollection )
 		{
-//			mpCurrentCollection = NULL;
+			mpCurrentCollection = mpQuickCollection;
 		}
 		else {
 			mpCurrentCollection = collecItem->mpCollec;

@@ -39,6 +39,9 @@ typedef struct {
 	int leftTabWidget_index;	///< Index of last opened tab in left tabwigdet (Folder, Collections, Device...)
 	int rightTabWidget_index;	///< Index of last opened tab in right tabwigdet (Info, Image, Plugins...)
 
+	// ===== Processing settings =====
+	bool processImageQuality;	///< Process image quality inficators for the image
+
 } t_workflow_settings ;
 
 #ifdef EMAMAINWINDOW_CPP

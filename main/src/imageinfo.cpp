@@ -32,6 +32,8 @@
 #include <QTextStream>
 
 #include "imageinfo.h"
+#include "swopencv.h" // for loading OpenCV functions to evaluate the quality of the image
+#include "piafworkflow-settings.h" // for global Piaf preferences
 
 #include "imgutils.h"
 #include "piaf-common.h"
@@ -47,7 +49,14 @@
 
 #include "file_video_acquisition_factory.h"
 
-u8 g_debug_ImageInfo = EMALOG_DEBUG;
+u8 g_debug_ImageInfo = EMALOG_INFO;
+
+#define IMGINFO_PRINT(_lvl, ...) do { \
+	if((_lvl)>=g_debug_ImageInfo) { \
+		fprintf(stderr, "[ImageInfo]::%s:%d: ", __func__, __LINE__); \
+		fprintf(stderr, __VA_ARGS__); \
+	} \
+	} while(0)
 
 /******************************************************************************/
 ImageInfo::ImageInfo() {
@@ -55,7 +64,7 @@ ImageInfo::ImageInfo() {
 }
 ImageInfo::~ImageInfo() {
 
-	fprintf(stderr, "ImageInfo::%s:%d : delete this=%p\n",
+	IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : delete this=%p\n",
 			__func__, __LINE__, this);
 	for(int h=0; h<3; h++) {
 		if(m_image_info_struct.log_histogram[h])
@@ -259,7 +268,7 @@ void compressCachedImage(t_cached_image * img) {
 	buffer.read((char *)img->compressed, img->compressed_size);
 
 	//
-	fprintf(stderr, "[imageinfo] %s:%d: DEBUG : save '/dev/shm/toto.jpg' %p / %d\n",
+	IMGINFO_PRINT(EMALOG_DEBUG, "[imageinfo] %s:%d: DEBUG : save '/dev/shm/toto.jpg' %p / %d\n",
 			__func__, __LINE__,
 			img->compressed, img->compressed_size);
 	FILE * f=fopen("/dev/shm/toto.jpg", "wb");
@@ -272,12 +281,12 @@ void compressCachedImage(t_cached_image * img) {
 /* Uncompress JPEG buffer to raw IplImage */
 void uncompressCachedImage(t_cached_image * img) {
 	if(img->iplImage) { return ; }
-
+	IMGINFO_PRINT(EMALOG_WARNING, "Not implemented");
 }
 
 
 void ImageInfo::purgeScaled() {
-	fprintf(stderr, "ImageInfo::%s:%d : purging scaled for this=%p\n", __func__, __LINE__, this);
+	IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : purging scaled for this=%p\n", __func__, __LINE__, this);
 	// purge info data
 	if(m_scaledImage == m_grayImage) {
 		m_grayImage = NULL;
@@ -384,7 +393,7 @@ int ImageInfo::readMetadata(QString filename) {
 		exifMaker = exifData["Exif.Photo.MakerNote"]; str = exifMaker.toString();
 		str = exifMaker.toString();
 		displayStr = QString::fromStdString(str);
-		fprintf(stderr, "MakerNote='%s'", displayStr.toUtf8().data());
+		IMGINFO_PRINT(EMALOG_DEBUG, "MakerNote='%s'", displayStr.toUtf8().data());
 
 		// Focal
 		exifMaker = exifData["Exif.Photo.FocalLengthIn35mmFilm"];
@@ -406,7 +415,7 @@ int ImageInfo::readMetadata(QString filename) {
 			displayStr += QString("eq. 35mm");
 		}
 		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\t[ImageInfo %p]::%s:%d: Focal : '%s' => %g s %g 35mm\n",
+			IMGINFO_PRINT(EMALOG_DEBUG, "\t[ImageInfo %p]::%s:%d: Focal : '%s' => %g s %g 35mm\n",
 					this, __func__, __LINE__,
 					displayStr.toUtf8().data(),
 					m_image_info_struct.exif.focal_mm,
@@ -425,7 +434,7 @@ int ImageInfo::readMetadata(QString filename) {
 		displayStr = QString::fromStdString(str);
 		m_image_info_struct.exif.speed_s = rational_to_float(displayStr);
 		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\t[ImageInfo %p]::%s:%d: Exposure time : '%s' => %g s\n",
+			IMGINFO_PRINT(EMALOG_DEBUG, "\t[ImageInfo %p]::%s:%d: Exposure time : '%s' => %g s\n",
 					this, __func__, __LINE__,
 					displayStr.toUtf8().data(), m_image_info_struct.exif.speed_s);
 		}
@@ -468,7 +477,7 @@ int ImageInfo::readMetadata(QString filename) {
 			std::string error(filename.toUtf8().data());
 			error += ": No IPTC data found in the file";
 			if(g_debug_ImageInfo) {
-				fprintf(stderr, "\t[ImageInfo %p]::%s:%d: No IPTC data found in the file: '%s' => throw error\n",
+				IMGINFO_PRINT(EMALOG_DEBUG, "\t[ImageInfo %p]::%s:%d: No IPTC data found in the file: '%s' => throw error\n",
 						this, __func__, __LINE__,
 						filename.toUtf8().data() );
 			}
@@ -493,12 +502,12 @@ int ImageInfo::readMetadata(QString filename) {
 	}
 	catch (Exiv2::AnyError& e) {
 		std::cout << "Caught Exiv2 exception '" << e << "'\n";
-		fprintf(stderr, "ImageInfo %p::%s:%d : ERROR : caught exception => return 0 (no metadata);\n",
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo %p::%s:%d : ERROR : caught exception => return 0 (no metadata);\n",
 				this, __func__, __LINE__); fflush(stderr);
 		return 0;
 	}
 
-	fprintf(stderr, "ImageInfo %p::%s:%d : FINE : return 0;\n", this, __func__, __LINE__);
+	IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo %p::%s:%d : FINE : return 0;\n", this, __func__, __LINE__);
 
 	return 0;
 }
@@ -576,14 +585,14 @@ int ImageInfo::loadFile(QString filename)
 	// File info
 	QFileInfo fi(filename);
 	if(!fi.exists()) {
-		fprintf(stderr, "ImageInfo::%s:%d: file '%s' does not exists (with Qt)\n",
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d: file '%s' does not exists (with Qt)\n",
 				__func__, __LINE__, qPrintable(filename));
 		return -1;
 	}
 
 	m_image_info_struct.filesize = fi.size();
 
-	fprintf(stderr, "ImageInfo::%s:%d: reading file '%s' ...\n",
+	IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d: reading file '%s' ...\n",
 			__func__, __LINE__, qPrintable(filename));
 
 	// LOAD IMAGE PIXMAP
@@ -591,7 +600,7 @@ int ImageInfo::loadFile(QString filename)
 	m_image_info_struct.filepath = QString( filename );
 
 	if(!m_originalImage) {
-		fprintf(stderr, "ImageInfo::%s:%d: cannot load image '%s' (with openCV)\n",
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d: cannot load image '%s' (with openCV)\n",
 				__func__, __LINE__, qPrintable(filename));
 
 		// Load as movie
@@ -609,7 +618,7 @@ int ImageInfo::loadFile(QString filename)
 		m_image_info_struct.nChannels = m_originalImage->nChannels;
 
 		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\tImageInfo::%s:%d : loaded '%s' : %dx%d x %d\n", __func__, __LINE__,
+			IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d : loaded '%s' : %dx%d x %d\n", __func__, __LINE__,
 					qPrintable(filename),
 					m_originalImage->width, m_originalImage->height,
 					m_originalImage->nChannels );
@@ -618,7 +627,7 @@ int ImageInfo::loadFile(QString filename)
 
 		m_originalImage = tmAddBorder4x(m_originalImage); // it will purge originalImage
 		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\tImageInfo::%s:%d => pitchedx4: %dx%d x %d\n", __func__, __LINE__,
+			IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d => pitchedx4: %dx%d x %d\n", __func__, __LINE__,
 				m_originalImage->width, m_originalImage->height,
 				m_originalImage->nChannels );
 		}
@@ -646,7 +655,7 @@ int ImageInfo::loadFile(QString filename)
 		if(m_scaledImage
 		   && (m_scaledImage->width != sc_w || m_scaledImage->height != sc_h
 			   || m_scaledImage->nChannels != m_originalImage->nChannels)) {
-			fprintf(stderr, "ImageInfo::%s:%d : this=%p size changed => purge scaled\n",
+			IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : this=%p size changed => purge scaled\n",
 					__func__, __LINE__, this);
 			// purge scaled images
 			purgeScaled();
@@ -692,52 +701,23 @@ int ImageInfo::loadFile(QString filename)
 		compressCachedImage(&m_image_info_struct.thumbImage);
 
 		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\tImageInfo::%s:%d : scaled to %dx%d\n", __func__, __LINE__,
+			IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d : scaled to %dx%d\n", __func__, __LINE__,
 					m_scaledImage->width, m_scaledImage->height);
-			fprintf(stderr, "\tImageInfo::%s:%d : thumb %dx%d\n", __func__, __LINE__,
+			IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d : thumb %dx%d\n", __func__, __LINE__,
 					m_thumbImage->width, m_thumbImage->height);
 
-			fprintf(stderr, "\tImageInfo::%s:%d : processRGB(m_scaledImage=%dx%d)...\n", __func__, __LINE__,
+			IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d : processRGB(m_scaledImage=%dx%d)...\n", __func__, __LINE__,
 					m_scaledImage->width, m_scaledImage->height);fflush(stderr);
 		}
 
-
-#ifndef PIAFWORKFLOW
-		// process RGB histogram
-		processRGB();
-
-		// process color analysis
-		processHSV();
-
-		// then sharpness
-		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\tImageInfo::%s:%d : processSharpness(gray=%dx%d)\n", __func__, __LINE__,
-					m_grayImage->width, m_grayImage->height);fflush(stderr);
-		}
-		processSharpness();
-
-		if(g_debug_ImageInfo) {
-			fprintf(stderr, "\tImageInfo::%s:%d : process done (gray=%dx%d)\n", __func__, __LINE__,
-					m_grayImage->width, m_grayImage->height);fflush(stderr);
-		}
-
-		/* Compute the final score
-		Score is the combination of several criteria :
-		- sharpness : proportioanl, and best if superior to 50 %
-	*/
-		float sharpness_score = tmmin(1.f,
-									  2.f * m_image_info_struct.sharpness_score / 100.f);
-		float histo_score = tmmin(1.f,
-								  2.f * m_image_info_struct.histo_score / 100.f);
-
-		m_image_info_struct.score = sharpness_score
-									* histo_score
-									* 100.f ; // in percent finally
-#else
+		// Clear sorting information
 		m_image_info_struct.sharpnessImage = NULL;
 		m_image_info_struct.hsvImage = NULL;
 		m_image_info_struct.score = -1;
-#endif
+
+		if (g_workflow_settings.processImageQuality) {
+			processQualityInfo();
+		}
 
 		// Activate the validation flag
 		m_image_info_struct.valid = 1;
@@ -746,11 +726,44 @@ int ImageInfo::loadFile(QString filename)
 	return 0;
 }
 
+int ImageInfo::processQualityInfo() {
+	// process RGB histogram
+	processRGB();
+
+	// process color analysis
+	processHSV();
+
+	// then sharpness
+	if(g_debug_ImageInfo) {
+		IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d : processSharpness(gray=%dx%d)\n", __func__, __LINE__,
+				m_grayImage->width, m_grayImage->height);fflush(stderr);
+	}
+	processSharpness();
+
+	if(g_debug_ImageInfo) {
+		IMGINFO_PRINT(EMALOG_DEBUG, "\tImageInfo::%s:%d : process done (gray=%dx%d)\n", __func__, __LINE__,
+				m_grayImage->width, m_grayImage->height);fflush(stderr);
+	}
+
+	/* Compute the final score
+	Score is the combination of several criteria :
+	- sharpness : proportioanl, and best if superior to 50 %
+*/
+	float sharpness_score = tmmin(1.f,
+								  2.f * m_image_info_struct.sharpness_score / 100.f);
+	float histo_score = tmmin(1.f,
+							  2.f * m_image_info_struct.histo_score / 100.f);
+
+	m_image_info_struct.score = sharpness_score
+								* histo_score
+									* 100.f ; // in percent finally
+}
+
 int ImageInfo::processHSV() {
 	// Change to HSV
 	if(m_scaledImage->nChannels < 3) {
 		// Clear histogram and return
-		fprintf(stderr, "ImageInfo::%s:%d : not coloured image : nChannels=%d\n", __func__, __LINE__,
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : not coloured image : nChannels=%d\n", __func__, __LINE__,
 			m_scaledImage->nChannels );
 		m_grayImage = m_scaledImage;
 		return 0;
@@ -971,7 +984,7 @@ int ImageInfo::processSharpness() {
 	int scale_y = size.height / scaledSize.height;
 
 	if(g_debug_ImageInfo) {
-		fprintf(stderr, "ImageInfo::%s:%d : size=%dx%d => scaledSize = %dx%d => scale factor=%dx%d\n",
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : size=%dx%d => scaledSize = %dx%d => scale factor=%dx%d\n",
 				__func__, __LINE__,
 				size.width, size.height,
 				scaledSize.width, scaledSize.height,
@@ -1004,7 +1017,7 @@ int ImageInfo::processSharpness() {
 	}
 
 	if(!m_sobelImage) {
-		fprintf(stderr, "ImageInfo::%s:%d : cannot create sobelImage ( size=%dx%d => scaledSize = %dx%d => scale factor=%dx%d)\n",
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : cannot create sobelImage ( size=%dx%d => scaledSize = %dx%d => scale factor=%dx%d)\n",
 				__func__, __LINE__,
 				size.width, size.height,
 				scaledSize.width, scaledSize.height,
@@ -1025,7 +1038,7 @@ int ImageInfo::processSharpness() {
 	}
 
 	if(!m_sharp32fImage) {
-		fprintf(stderr, "ImageInfo::%s:%d : cannot create sharpImage ( size=%dx%d => scaledSize = %dx%d => scale factor=%dx%d)\n",
+		IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : cannot create sharpImage ( size=%dx%d => scaledSize = %dx%d => scale factor=%dx%d)\n",
 				__func__, __LINE__,
 				size.width, size.height,
 				scaledSize.width, scaledSize.height,
@@ -1036,7 +1049,7 @@ int ImageInfo::processSharpness() {
 	float valmax = 1.f;
 	for(int pass=0; pass<2; pass++) {
 		if(g_debug_ImageInfo) {
-			fprintf(stderr, "ImageInfo::%s:%d : cvSobel(m_grayImage, sobelImage, pass=%d)\n",
+			IMGINFO_PRINT(EMALOG_DEBUG, "ImageInfo::%s:%d : cvSobel(m_grayImage, sobelImage, pass=%d)\n",
 				__func__, __LINE__, pass); fflush(stderr);
 		}
 
@@ -1127,11 +1140,13 @@ int ImageInfo::processSharpness() {
 void saveImageInfoStruct(t_image_info_struct * pinfo, QString path)
 {
 	if(!pinfo) { return; }
+
 	if(path.isEmpty())
 	{
 		path = pinfo->cache_file;
 	}
-	fprintf(stderr, "[ImageInfo %s:%d : saving XML cache in '%s'\n",
+
+	IMGINFO_PRINT(EMALOG_DEBUG, "[ImageInfo %s:%d : saving XML cache in '%s'\n",
 			__func__, __LINE__, qPrintable(path));
 
 	QDomDocument infoDoc;
@@ -1257,16 +1272,16 @@ void saveImageInfoStruct(t_image_info_struct * pinfo, QString path)
 }
 void printImageInfoStruct(t_image_info_struct * pinfo)
 {
-	fprintf(stderr, "[imageinfo] %s:%d : pinfo = %p\n", __func__, __LINE__, pinfo);
+	IMGINFO_PRINT(EMALOG_DEBUG, "[imageinfo] %s:%d : pinfo = %p\n", __func__, __LINE__, pinfo);
 	if(!pinfo) { return; }
 	// FILE DATA
-	fprintf(stderr, "File: '%s' / %ld bytes\n",
+	IMGINFO_PRINT(EMALOG_DEBUG, "File: '%s' / %ld bytes\n",
 			qPrintable(pinfo->filepath), (long)pinfo->filesize);
-	fprintf(stderr, "\t%d x %d x %d\t", pinfo->width, pinfo->height, pinfo->nChannels);
-	fprintf(stderr, "%s\n", pinfo->isMovie ? "Movie" : "Picture");
+	IMGINFO_PRINT(EMALOG_DEBUG, "\t%d x %d x %d\t", pinfo->width, pinfo->height, pinfo->nChannels);
+	IMGINFO_PRINT(EMALOG_DEBUG, "%s\n", pinfo->isMovie ? "Movie" : "Picture");
 
 	if(!pinfo->isMovie) {
-		fprintf(stderr, "\tEXIF: maker='%s', model='%s', date=%s orientation=%c "
+		IMGINFO_PRINT(EMALOG_DEBUG, "\tEXIF: maker='%s', model='%s', date=%s orientation=%c "
 				"focal=%gmm=%g mm(eq 35mm), F/%g, %g s\n"
 				,
 				qPrintable(pinfo->exif.maker),
@@ -1275,7 +1290,7 @@ void printImageInfoStruct(t_image_info_struct * pinfo)
 				pinfo->exif.orientation,
 				pinfo->exif.focal_mm, pinfo->exif.focal_eq135_mm,
 				pinfo->exif.aperture, pinfo->exif.speed_s);
-		fprintf(stderr, "\tIPTC: city='%s', sublocation='%s', province/state='%s',"
+		IMGINFO_PRINT(EMALOG_DEBUG, "\tIPTC: city='%s', sublocation='%s', province/state='%s',"
 				" country code='%s', name='%s'\n",
 				qPrintable(pinfo->iptc.city),
 				qPrintable(pinfo->iptc.sublocation),
@@ -1284,17 +1299,17 @@ void printImageInfoStruct(t_image_info_struct * pinfo)
 				qPrintable(pinfo->iptc.countryname) 
 			);
 	} else {
-		fprintf(stderr, "\t%g fps, FourCC='%s'\n", pinfo->fps, pinfo->FourCC);
+		IMGINFO_PRINT(EMALOG_DEBUG, "\t%g fps, FourCC='%s'\n", pinfo->fps, pinfo->FourCC);
 	}
 
 
-	fprintf(stderr, "\tKeywords={");
+	IMGINFO_PRINT(EMALOG_DEBUG, "\tKeywords={");
 	QStringList::iterator it;
 	for(it = pinfo->keywords.begin(); it != pinfo->keywords.end(); ++it)
 	{
-		fprintf(stderr, "'%s', ", qPrintable((*it)));
+		IMGINFO_PRINT(EMALOG_DEBUG, "'%s', ", qPrintable((*it)));
 	}
-	fprintf(stderr, "}\n\tImage: %s, sharpness=%g, histo=%g\n",
+	IMGINFO_PRINT(EMALOG_DEBUG, "}\n\tImage: %s, sharpness=%g, histo=%g\n",
 			pinfo->grayscaled ? "gray": "color",
 			pinfo->sharpness_score, pinfo->histo_score);
 

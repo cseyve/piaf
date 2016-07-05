@@ -37,7 +37,6 @@ linux-g++:TMAKE_CXXFLAGS += -Wall \
 	-g \
 	-O2 \
 	-fexceptions \
-	-Wimplicit \
 	-Wreturn-type \
 	-Wunused \
 	-Wswitch \

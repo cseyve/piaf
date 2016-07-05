@@ -333,7 +333,8 @@ IplImage * obsoleteCreateImage(const char * file, const char * func, int line,
 	// For 32bit, fill the alpha channel
 	if(img->depth == IPL_DEPTH_8U && img->nChannels == 4)
 	{
-		cvFillImage(img, (255));
+		//cvFillImage(img, (255)); // not available anymore in OpenCV 3
+		memset(img->imageData, 0xff, img->imageSize);
 	}
 
 	return img;

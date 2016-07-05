@@ -246,6 +246,7 @@ SOURCES += \
 	$$LEGACYPATH/tools/src/vidacqsettingswindow.cpp \
 	$$LEGACYPATH/tools/src/swimage_utils.cpp \
 	$$LEGACYPATH/tools/src/qimage_utils.cpp \
+    src/scality.cpp
 
 
 HEADERS += \
