@@ -35,7 +35,7 @@
 int g_EMAImgMng_debug_mode = EMALOG_INFO;
 
 #define EMAIM_printf(a,...)  { \
-		if(g_EMAImgMng_debug_mode>=(a)) { \
+		if(g_EMAImgMng_debug_mode<=(a)) { \
 			fprintf(stderr,"EmaImageManager::%s:%d : ",__func__,__LINE__); \
 			fprintf(stderr,__VA_ARGS__); \
 			fprintf(stderr,"\n"); \

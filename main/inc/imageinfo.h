@@ -213,6 +213,10 @@ public:
 	/** @brief purge temporary thumbs */
 	void purgeThumbs();
 
+	/** @brief High-level processing function to extract HSV, sharpness, ... */
+	int processQualityInfo();
+
+
 private:
 	/** @brief Initialization function */
 	void init();
@@ -266,8 +270,6 @@ private:
 	/** @brief purge scaled images */
 	void purgeScaled();
 
-	/** @brief High-level processing function to extract HSV, sharpness, ... */
-	int processQualityInfo();
 
 	/** @brief Process HSV analysis */
 	int processHSV();

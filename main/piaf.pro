@@ -289,7 +289,6 @@ linux-g++: {
 		-Wall \
 		-O0 \
 		-fexceptions \
-		-Wimplicit \
 		-Wreturn-type \
 		-Wunused \
 		-Wswitch \

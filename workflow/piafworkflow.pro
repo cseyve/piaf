@@ -457,7 +457,6 @@ linux-g++: {
 		-Wpointer-arith
 	 QMAKE_CXXFLAGS +=   -O0 \
                 -fexceptions \
-                -Wimplicit \
                 -Wreturn-type \
                 -Wunused \
                 -Wswitch \

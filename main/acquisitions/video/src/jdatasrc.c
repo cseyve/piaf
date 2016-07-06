@@ -246,8 +246,10 @@ jpeg_stdio_src (j_decompress_ptr cinfo, FILE * infile)
  */
 
 GLOBAL(void)
-jpeg_mem_src (j_decompress_ptr cinfo,
-	      unsigned char * inbuffer, unsigned long insize)
+jpeg_mem_src (
+		j_decompress_ptr cinfo,
+		const unsigned char * inbuffer,
+		unsigned long insize)
 {
   struct jpeg_source_mgr * src;
 

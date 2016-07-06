@@ -80,6 +80,7 @@ void ImageInfoWidget::setImageFile(const QString &  imagePath) {
 
 	QByteArray arrStr = imagePath.toUtf8();
 	m_imgProc->loadFile( arrStr.data() );
+	m_imgProc->processQualityInfo();// process analyze of image quality
 
 	// RGB Histogram
 	IplImage * histo = m_imgProc->getHistogram();

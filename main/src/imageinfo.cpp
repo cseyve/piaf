@@ -49,7 +49,7 @@
 
 #include "file_video_acquisition_factory.h"
 
-u8 g_debug_ImageInfo = EMALOG_INFO;
+int g_debug_ImageInfo = EMALOG_INFO;
 
 #define IMGINFO_PRINT(_lvl, ...) do { \
 	if((_lvl)>=g_debug_ImageInfo) { \
@@ -322,7 +322,7 @@ int ImageInfo::readMetadata(QString filename) {
 			error += ": No Exif data found in the file";
 			throw Exiv2::Error(1, error);
 		}
-		Exiv2::ExifData::const_iterator end = exifData.end();
+		//unused: Exiv2::ExifData::const_iterator end = exifData.end();
 
 		QString displayStr;
 
@@ -695,6 +695,7 @@ int ImageInfo::loadFile(QString filename)
 		}
 
 		cvResize(m_scaledImage, m_thumbImage);
+		/// \todo swap colors of thumb
 
 		m_image_info_struct.thumbImage.iplImage = m_thumbImage;
 
@@ -727,6 +728,7 @@ int ImageInfo::loadFile(QString filename)
 }
 
 int ImageInfo::processQualityInfo() {
+	if( m_sharpnessImage ) { return 0; } // already processed
 	// process RGB histogram
 	processRGB();
 
@@ -757,6 +759,8 @@ int ImageInfo::processQualityInfo() {
 	m_image_info_struct.score = sharpness_score
 								* histo_score
 									* 100.f ; // in percent finally
+
+	return 0;
 }
 
 int ImageInfo::processHSV() {

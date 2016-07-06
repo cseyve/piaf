@@ -427,8 +427,8 @@ int FFmpegFileVideoAcquisition::openDevice(const char * aDevice, tBoxSize )
 	myAcqIsInitialised = true;
 	m_fileSize = avio_size(URLPB(m_pFormatCtx->pb));
 
-	fprintf(stderr, "FileVA::%s:%d : file size : %llu / img=%dx%d\n",
-			__func__, __LINE__, m_fileSize, mImageSize.width, mImageSize.height);
+	fprintf(stderr, "FileVA::%s:%d : file size : %lld / img=%dx%d\n",
+			__func__, __LINE__, (unsigned long long)m_fileSize, mImageSize.width, mImageSize.height);
 
 	rewindMovie();
 	return 1;

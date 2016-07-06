@@ -1494,6 +1494,7 @@ void EmaMainWindow::setCurrentMainFile(QString fileName)
 		}
 	}
 
+	// Display current image in top-left
 	ui->globalNavImageWidget->setImageFile(fileName);
 	t_image_info_struct * pinfo = NULL;
 
@@ -1511,6 +1512,7 @@ void EmaMainWindow::setCurrentMainFile(QString fileName)
 	}
 
 	// print allocated images
+	EMAMW_printf(SWLOG_INFO, "allocated images:");
 	tmPrintIplImages();
 
 	if(pinfo) {
@@ -1566,6 +1568,7 @@ void EmaMainWindow::setCurrentMainFile(QString fileName)
 		EMAMW_printf(EMALOG_DEBUG, "File '%s' show exif date\n", fileName.toUtf8().data())
 		ui->exifScrollArea->setImageInfo(pinfo);
 	}
+
 }
 
 /* Set the file to be added in workspace */
