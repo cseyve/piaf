@@ -639,7 +639,7 @@ bool FFmpegFileVideoAcquisition::endOfFile(){
 //		fprintf(stderr, "FileVA::%s:%d : url_ftell=%d > m_fileSize=%ld !!\n",
 //			__func__,__LINE__, url_ftell(URLPB(m_pFormatCtx->pb)), m_fileSize);
 
-	return ( url_feof(URLPB(m_pFormatCtx->pb)) ||
+    return ( avio_feof(URLPB(m_pFormatCtx->pb)) ||
 		((unsigned long)url_ftell(URLPB(m_pFormatCtx->pb)) > m_fileSize)
 		);
 }
@@ -1741,13 +1741,17 @@ int FFmpegFileVideoAcquisition::getPalette()
         case AV_PIX_FMT_YUVJ444P:  ///< Planar YUV 4:4:4 full scale (jpeg)
             fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_YUVJ444P\n");
 			return -1;
+#ifdef AV_PIX_FMT_XVMC_MPEG2_MC
         case AV_PIX_FMT_XVMC_MPEG2_MC:///< XVideo Motion Acceleration via common packet passing(xvmc_render.h)
             fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_XVMC_MPEG2_MC\n");
 			return -1;
+#endif
+#ifdef AV_PIX_FMT_XVMC_MPEG2_IDCT
         case AV_PIX_FMT_XVMC_MPEG2_IDCT:
             fprintf(stderr, "FileVA: Palette is AV_PIX_FMT_XVMC_MPEG2_IDCT\n");
 			return -1;
-		default:
+#endif
+        default:
 			fprintf(stderr, "FileVA::%s:%d : UNKNOWN PALETTE !!\n", __func__, __LINE__);
 
 			return -1;

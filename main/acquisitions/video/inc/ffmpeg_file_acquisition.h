@@ -1,10 +1,9 @@
 /*|------------------------------------------------------------------------------------------------------------|*/
-/*|     FFmpegFileVideoAcquisition.h  -  description												|*/
-/*|		  ---------------------------------														|*/				
-/*|	begin					: Wed July 9 2003																					|*/
-/*|   	copyright				: (C) 2003 by Christophe Seyve																		|*/
-/*|    email					: cseyve@free.fr																		|*/
-/*|	description			: Entete de la classe VideoAcquisition par fichier											|*/
+/*| FFmpegFileVideoAcquisition.h  -  Image acquisition from movie												|*/
+/*|		  ---------------------------------                                                                     |*/
+/*|	begin					: Wed July 9 2003																	|*/
+/*| copyright				: (C) 2003 by Christophe Seyve														|*/
+/*| email					: cseyve@free.fr																	|*/
 /*|------------------------------------------------------------------------------------------------------------|*/
 
 #ifndef FFMPEG_FILE_VIDEOACQUISITION_H
@@ -57,6 +56,7 @@
 #include "workflowtypes.h"
 #endif 
 
+#include "swopencv.h"
 
 
 #include "ccvt.h"

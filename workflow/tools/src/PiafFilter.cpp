@@ -1739,7 +1739,6 @@ int PiafFilter::loadChildProcess()
 			close( pipeOut[0]);
 
 			chdir(path);
-
 			if(execv(exec_name, NULL) == -1)
 			{
 				int errnum = errno;
@@ -1747,6 +1746,7 @@ int PiafFilter::loadChildProcess()
 						 exec_name, errnum, strerror(errnum));
 				exit(EXIT_FAILURE);;
 			}
+
 			exit(EXIT_SUCCESS);
 
 			break;
@@ -1833,11 +1833,15 @@ int PiafFilter::unloadChildProcess()
 
 //#endif
 	if(pipeR) {
+		fprintf(stderr, "PiafFilter::%s:%d : closing pipeR to child '%s'\n",
+				__func__, __LINE__, exec_name); fflush(stderr);
 		fclose(pipeR);
 		pipeR = NULL;
 	}
 
-	if(pipeW) { // CSE : 2011-05-30 : was commented
+	if(pipeW) {
+		fprintf(stderr, "PiafFilter::%s:%d : closing pipeW to child '%s'\n",
+				__func__, __LINE__, exec_name); fflush(stderr);
 		fclose(pipeW);
 		pipeW = NULL;
 	}

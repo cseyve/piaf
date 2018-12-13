@@ -1,6 +1,18 @@
-# -------------------------------------------------
-# Project created by QtCreator 2009-07-01T21:37:51
-# -------------------------------------------------
+# PIAF - WORKFLOW UI VERSION
+# PIAF - WORKFLOW UI VERSION
+# PIAF - WORKFLOW UI VERSION
+# Required:
+# - OpenCV 2.x, Open CV 3 is not supported
+# - Exiv2. If you don't have Exiv2, use the piaf/main project instead.
+#
+# 2018-12-12 - NOTE FOR MACOS:
+# if you are both using HomeBrew and another version of Qt from QtCreator you may need to:
+# - add the /usr/local/bin in the PATH environment variable of QtCreator
+# - compile manually the plugins from the folder plugins/vision:
+#   export PATH=/Users/tof/Qt/5.12.0/clang_64/bin:$PATH
+
+
+
 TEMPLATE = app
 
 QT += xml
@@ -32,7 +44,7 @@ unix: {
     DEFINES += VERSION_YY="`date +%Y`" \
         VERSION_MM="`date +%m | sed 's/0//'`" \
         VERSION_DD="`date +%d | sed 's/0//'`" \
-	__LINUX__ LINUX _LINUX
+        __UNIX__ UNIX _UNIX
 }
 
 win32: {
@@ -45,7 +57,7 @@ win32: {
 # icon
 # reference : file:///usr/share/qt4/doc/html/appicon.html
 # mac::ICON = icon/Ema.icns
-QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4
+QMAKE_MACOSX_DEPLOYMENT_TARGET=10.8
 mac:ICON = icons/ema-icon.icns
 
 # and an uppercase first letter for Mac & Windows
@@ -245,8 +257,7 @@ SOURCES += \
 	$$LEGACYPATH/src/plugineditdialog.cpp \
 	$$LEGACYPATH/tools/src/vidacqsettingswindow.cpp \
 	$$LEGACYPATH/tools/src/swimage_utils.cpp \
-	$$LEGACYPATH/tools/src/qimage_utils.cpp \
-    src/scality.cpp
+	$$LEGACYPATH/tools/src/qimage_utils.cpp 
 
 
 HEADERS += \
@@ -536,16 +547,16 @@ RESOURCES += \
 # # INSTALLATION
 # INSTALLS += target
 # FINAL CONFIGURATION ==================================================
-message( "")
-message( "")
+message( " ")
+message( " ")
 message( "FINAL CONFIGURATION ================================================== ")
 message( "Configuration : ")
 message( " config : $$CONFIG ")
 message( " defs : $$DEFINES ")
 message( " libs : $$LIBS ")
 message( "FINAL CONFIGURATION ================================================== ")
-message( "")
-message( "")
+message( " ")
+message( " ")
 OTHER_FILES += doc/OpenCVToolsForPhoto.txt
 
 

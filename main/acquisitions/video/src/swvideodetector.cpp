@@ -17,6 +17,9 @@
  ***************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "swopencv.h"
 
 #include "swvideodetector.h"
 #include "piaf-common.h"
@@ -145,7 +148,7 @@ int swByteDepth(IplImage * iplImage) {
 			IPL_DEPTH_32S, IPL_DEPTH_32F and IPL_DEPTH_64F are supported
 	*/
 
-	switch(iplImage->depth) {
+    switch((unsigned)iplImage->depth) {
 	case IPL_DEPTH_8U:
 		byte_depth *= sizeof(unsigned char);
 		break;

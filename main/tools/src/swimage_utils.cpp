@@ -109,7 +109,7 @@ void mapIplImageToSwImage(IplImage * iplImage, swImageStruct * swim)
 	swim->bytedepth = iplImage->depth/8;
 	swim->pitch = iplImage->widthStep;
 
-	switch(iplImage->depth)
+    switch((unsigned)iplImage->depth)
 	{
 	default:
 		swim->pixelType = 0;

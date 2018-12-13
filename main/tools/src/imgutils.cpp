@@ -50,7 +50,7 @@ int tmByteDepth(IplImage * iplImage) {
 			IPL_DEPTH_32S, IPL_DEPTH_32F and IPL_DEPTH_64F are supported
 	*/
 
-	switch(iplImage->depth) {
+    switch((unsigned)iplImage->depth) {
 	case IPL_DEPTH_8U:
 		byte_depth *= sizeof(unsigned char);
 		break;
@@ -78,6 +78,8 @@ int tmByteDepth(IplImage * iplImage) {
 
 	return byte_depth;
 }
+
+
 /* Print image properties */
 void tmPrintProperties(IplImage * img) {
 	/*
@@ -924,7 +926,7 @@ void tmCropImage(IplImage * origImage,
 			fprintf(stderr, "[%s] %s:%d : unsupported conversion : depth %d=>%d for display image\n",
 				__FILE__, __func__, __LINE__, byte_depth, byte_depth2);
 			fprintf(stderr, "[%s] %s:%d : origImage: %d x ", __FILE__, __func__, __LINE__, origImage->nChannels);
-			switch(origImage->depth) {
+            switch((unsigned)origImage->depth) {
 			case IPL_DEPTH_8U:
 				fprintf(stderr, "IPL_DEPTH_8U\n");
 				break;
@@ -951,7 +953,7 @@ void tmCropImage(IplImage * origImage,
 				break;
 			}
 			fprintf(stderr, "[%s] %s:%d :cropImage: %d x ", __FILE__, __func__, __LINE__, cropImage->nChannels);
-			switch(cropImage->depth) {
+            switch((unsigned)cropImage->depth) {
 			case IPL_DEPTH_8U:
 				fprintf(stderr, "IPL_DEPTH_8U\n");
 				break;
@@ -1226,7 +1228,7 @@ float tmCorrelation(
 	int wxh_4 = w * h * channels / 4;
 	long maxdiff = 0;
 
-	switch(img1->depth) {
+    switch((unsigned)img1->depth) {
 	case IPL_DEPTH_8S:
 		UTILS_PRINT( "[imgutils] %s:%d : unsupported depth IPL_DEPTH_8S\n", __func__, __LINE__);
 		break;
@@ -1475,7 +1477,7 @@ int tmSearchBestCorrelation(
 	float best_best = 1.f;
 
 	float depth_coef = 1.f;
-	switch(origImage->depth) {
+    switch((unsigned)origImage->depth) {
 	case IPL_DEPTH_8U:
 		break;
 	case IPL_DEPTH_8S:

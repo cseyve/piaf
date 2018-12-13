@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "qimage_utils.h"
+#include "swopencv.h"
 
 #include "piaf-common.h"
 // TYPEDEFS FOR MULTIPLE ARCHITECTURE TYPES (32bit, 64bit...)
@@ -90,7 +91,7 @@ QImage iplImageToQImage(IplImage * iplImage, bool swap_RB)
 				   depth > 1 ? QImage::Format_RGB32 : QImage::Format_Indexed8);
 	memset(qImage.bits(), 127, orig_width*orig_height*depth);
 
-	switch(iplImage->depth) {
+    switch((unsigned)iplImage->depth) {
 	default:
 		fprintf(stderr, "imageinfowidget %s:%d : Unsupported depth = %d\n", __func__, __LINE__, iplImage->depth);
 		break;
